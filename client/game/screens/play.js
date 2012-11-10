@@ -1,7 +1,8 @@
 var PlayScreen = me.ScreenObject.extend( {
 
   onResetEvent: function() {	
-    me.levelDirector.loadLevel('level_name');
+    // Load the default level.  These levels are defined in assets.js
+    me.levelDirector.loadLevel('map_01');
   },
 
   onDestroyEvent: function() {

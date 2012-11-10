@@ -3,17 +3,21 @@
   <head>
     <title>Survive the Night</title>
   </head>
-  <center>
-    <body style="background-color: #000;">
+  <body style="background-color: #000;">
+    <center>
       <div id="fps">
         <font color="#FFFFFF" style="font-size: 10px;">
           <span id="framecounter">(0/0 fps)</span>
         </font>
       </div>
       <div id="jsapp">
-        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="lib/melonJS-0.9.5.js"></script>
+        <script type="text/javascript" src="game/main.js"></script>
+        <script type="text/javascript" src="game/assets.js"></script>
+        <script type="text/javascript" src="game/screens/play.js"></script>
+        <script type="text/javascript" src="game/entities/players/player.js"></script>
       </div>
-    </body>
-  </center>
+    </center>
+  </body>
 </html>
