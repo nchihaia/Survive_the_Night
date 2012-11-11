@@ -3,27 +3,17 @@
 var PlayerEntity = me.ObjectEntity.extend( {	
 
   init: function(x, y, settings) {
-    // Call ObjectEntity constructor
-    this.parent(x, y, settings);
-  }
-});
-
-// The character directly controlled by the client
-var MainPlayerEntity = PlayerEntity.extend( {
-
-  init: function(x, y, settings) {
-
+    
     // Set the sprite image to be playerA 
     // (This is defined in client/game/assets/js)
-    settings.image = 'playerA';
-    settings.spritewidth = 32;
-    settings.spriteheight = 48;
-    
-    // Call the parent constructor (PlayerEntity)
-    this.parent(x, y, settings);
+    if (!settings.image) {
+      settings.image = 'playerA';
+      settings.spritewidth = 32;
+      settings.spriteheight = 48;
+    }
 
-    // Camera will follow this entity around
-    me.game.viewport.follow(this);
+    // Call ObjectEntity constructor
+    this.parent(x, y, settings);
 
     // Define animations
     this.addAnimation('stand_down', [0]);
@@ -47,6 +37,19 @@ var MainPlayerEntity = PlayerEntity.extend( {
     this.setFriction(1.5, 1.5);
     this.gravity = 0;
     this.collidable = true;
+  }
+});
+
+// The character directly controlled by the client
+var MainPlayerEntity = PlayerEntity.extend( {
+
+  init: function(x, y, settings) {
+
+    // Call the parent constructor (PlayerEntity)
+    this.parent(x, y, settings);
+
+    // Camera will follow this entity around
+    me.game.viewport.follow(this);
   },
 
   // Automatically called by melonjs once per tick
@@ -80,7 +83,46 @@ var MainPlayerEntity = PlayerEntity.extend( {
       this.setCurrentAnimation(this.animation);
       this.parent(this);
     }
+    
+    // Record the player's current position to tell the server later
+    mainPlayerUpdates.positions.push( {
+      pos_x: this.pos.x,
+      pos_y: this.pos.y,
+      animation: this.animation
+    });
 
+    return true;
+  }
+});
+
+// Teammates of the main player
+var TeammateEntity = PlayerEntity.extend( {
+
+  init: function(x, y, settings) {
+
+    // Call the parent constructor (PlayerEntity)
+    this.parent(x, y, settings);
+  },
+
+ update: function() {
+    
+    // If there are no more updates about this player's movements,
+    // don't do anything
+    if (this.updates.length == 0) {
+      return;
+    }
+    
+    // Pop an item off this teammate's update stack and set the
+    // teammate's position to the coordinates defined by it
+    updateItem = this.updates.shift();
+    this.pos.x = updateItem.pos_x;
+    this.pos.y = updateItem.pos_y;
+
+    this.updateMovement();
+    res = me.game.collide(this);
+    this.setCurrentAnimation(updateItem.animation);
+
+    this.parent(this);
     return true;
   }
 });

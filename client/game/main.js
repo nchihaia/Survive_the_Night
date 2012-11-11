@@ -34,6 +34,7 @@ var surviveTheNight = {
     // are 4 bots, if they are defined by the same entity, the entity 
     // should only be added once to the entity pool
     me.entityPool.add('MainPlayerEntity', MainPlayerEntity);
+    me.entityPool.add('TeammateEntity', TeammateEntity);
 
     // First screen client sees is the play screen
     me.state.change(me.state.PLAY);
@@ -44,6 +45,9 @@ var surviveTheNight = {
     me.input.bindKey(me.input.KEY.RIGHT, 'right');
     me.input.bindKey(me.input.KEY.UP,	'up');
     me.input.bindKey(me.input.KEY.DOWN,	'down');
+
+    // Tell the server that we have joined the game
+    socket.emit('joining game');
   }
 };
 
@@ -51,5 +55,3 @@ var surviveTheNight = {
 window.onReady(function() {
   surviveTheNight.onload();
 });
-
-
