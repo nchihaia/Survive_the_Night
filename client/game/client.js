@@ -1,5 +1,6 @@
 // Set the url of our game server for the client can communicate with
 var socket = io.connect('http:\/\/localhost:5000');
+// var socket = io.connect('http:\/\/survivethenight.herokuapp.com');
 
 // Keeps track of the updates of the actions for the main 
 // player (the player the client controls).
