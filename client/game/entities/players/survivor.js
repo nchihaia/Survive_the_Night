@@ -1,5 +1,5 @@
 // The character directly controlled by the client
-var MainPlayerEntity = PlayerEntity.extend( {
+var MainSurvivorEntity = PlayerEntity.extend( {
 
   init: function(x, y, settings) {
 
@@ -13,22 +13,7 @@ var MainPlayerEntity = PlayerEntity.extend( {
   // Automatically called by melonjs once per tick
   update: function() {
 
-    // Change player's animation/position based on keypress
-    if (me.input.isKeyPressed('left')) {
-      this.vel.x -= this.accel.x;
-      this.direction = 'left';
-    } else if (me.input.isKeyPressed('right')) {
-      this.vel.x += this.accel.x;
-      this.direction = 'right';
-    }
-
-    if (me.input.isKeyPressed('up')) {
-      this.vel.y -= this.accel.y;
-      this.direction = 'up';
-    } else if (me.input.isKeyPressed('down')) {
-      this.vel.y += this.accel.y;
-      this.direction = 'down';
-    }
+    keyboard_movement(this);
 
     this.updateMovement();
 
@@ -48,6 +33,26 @@ var MainPlayerEntity = PlayerEntity.extend( {
       pos_y: this.pos.y,
       animation: this.animation
     });
+
+    return true;
+  }
+});
+
+// Teammates of the main player
+var OtherSurvivorEntity = PlayerEntity.extend( {
+
+  init: function(x, y, settings) {
+
+    // Call the parent constructor (PlayerEntity)
+    this.parent(x, y, settings);
+    this.diff_x = 0
+    this.diff_y = 0
+  },
+
+ update: function() {
+    
+    server_movement(this);
+    this.parent(this);
 
     return true;
   }

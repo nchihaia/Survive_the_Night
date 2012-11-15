@@ -60,7 +60,7 @@ function initMainPlayerUpdates() {
 function addTeammate(id) {
 
   // Create a new instance of the entity representing the teammate
-  var teammate = new TeammateEntity(100, 100, {});
+  var teammate = new OtherSurvivorEntity(100, 100, {});
   
   teammate.updates = []
   

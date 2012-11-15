@@ -576,7 +576,7 @@
   </data>
  </layer>
  <objectgroup name="MainPlayerEntity" width="40" height="14">
-  <object name="MainPlayerEntity" x="515" y="191" width="115" height="58"/>
+  <object name="MainSurvivorEntity" x="515" y="191" width="115" height="58"/>
  </objectgroup>
  <layer name="Collision tiles" width="40" height="14">
   <data>

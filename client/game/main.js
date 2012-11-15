@@ -33,8 +33,8 @@ var surviveTheNight = {
     // Add each entity ONCE into the entity pool.  Even if there
     // are 4 bots, if they are defined by the same entity, the entity 
     // should only be added once to the entity pool
-    me.entityPool.add('MainPlayerEntity', MainPlayerEntity);
-    me.entityPool.add('TeammateEntity', TeammateEntity);
+    me.entityPool.add('MainSurvivorEntity', MainSurvivorEntity);
+    me.entityPool.add('OtherSurvivorEntity', OtherSurvivorEntity);
 
     // First screen client sees is the play screen
     me.state.change(me.state.PLAY);
