@@ -26,9 +26,6 @@ var TeammateEntity = PlayerEntity.extend( {
         this.pos.y += this.diff_y;
       }
 
-      this.updateMovement();
-      this.setCurrentAnimation(this.animation);
-      return;
     } else {
       // Pop an item off this teammate's update stack and set the
       // teammate's position to the coordinates defined by it
@@ -39,12 +36,12 @@ var TeammateEntity = PlayerEntity.extend( {
 
       this.pos.x = updateItem.pos_x;
       this.pos.y = updateItem.pos_y;
-      this.updateMovement();
       this.animation = updateItem.animation;
-      this.setCurrentAnimation(this.animation);
     }
       
     // res = me.game.collide(this);
+    this.updateMovement();
+    this.setCurrentAnimation(this.animation);
     this.parent(this);
 
     return true;
