@@ -14,7 +14,7 @@ var game = {
 
 // Decide the maximum number of update items (1 item = 1 frame) to keep
 var MAX_FRAMES_TO_KEEP = 3;
-var MARGIN = 7;
+var MARGIN = 17;
 
 /*
  * Listening for messages from the server
