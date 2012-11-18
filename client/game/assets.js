@@ -31,15 +31,6 @@ var assets = [
     name: 'map_01',
     type: 'tmx',	
     src: 'assets/maps/map_01.tmx'
-  },
-
-  /**
-  * Fonts
-  */
-  {
-    name: "kromasky_16x16",	
-    type:"image",	
-    src: "assets/fonts/kromasky_16x16.png"
   }
 ];
 
