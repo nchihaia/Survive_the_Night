@@ -15,6 +15,7 @@ app.listen(port, function() {
 var io = require('socket.io').listen(app);
 
 io.set('log level', 2);
+var gameLogLevel = 2;
 
 // Heroku requires us to use long-polling instead of websockets
 io.configure(function() { 
@@ -22,80 +23,215 @@ io.configure(function() {
   io.set('polling duration', 10); 
 });
 
-var game = {
-  players: {},
-};
+var game = initGame();
+
+var lobby = {
+  players: {}
+}
 
 var gameUpdates = initGameUpdates();
 
 // Listen for custom events sent by clients
 io.sockets.on('connection', function(socket) {
-  
-  // Sent by a newly created client
-  socket.on('joining game', function(data) {
 
-    console.log('Player ' + socket.id + ' joined the game');
-    addPlayer(socket.id);
+  /*
+  * Lobby listeners
+  */
 
-    // Broadcast to all other players except this player that a 
-    // new player has joined
-    socket.broadcast.emit('new player joined the game', socket.id);
-
-    // Tell the main player about the current game state
-    console.log(game);
-    socket.emit('tell new player about game state', { 
-      mainPlayerId: socket.id, 
-      game: game 
+  socket.on('this client first joins the lobby', function(name) {
+    logger(name + ' joins the lobby', 1);  
+    addToLobby(socket.id, name);
+    socket.broadcast.emit('a new player joins the lobby', {
+      id: socket.id,
+      name: name
     });
+    // Send new client the lobby state
+    sendLobbyState(socket);
   });
   
-  // Sent when the player disconnects
-  socket.on('disconnect', function(data) {
+  socket.on('this client is re-requesting the lobby state', function() {
+    logger(socket.id + ' re-requesting lobby state', 1);
+    sendLobbyState(socket);
+  });
 
-    // don't do anything if the our game state doesn't know
-    // about the player
-    if (!game.players[socket.id]) {
-      return;
+  socket.on('this client changes their character', function(character) {
+    if (lobby.players[socket.id]) {
+      logger(lobby.players[socket.id].name + ' switches to ' + character, 3);
+      lobby.players[socket.id].character = character
+      socket.broadcast.emit('a client changes their character', {
+        id: socket.id,
+        character: character
+      });
     }
-    delete game.players[socket.id];
-    console.log('Player ' + socket.id + ' left the game');
+  });
 
-    // Tell all other clients that the player has left
-    socket.broadcast.emit('a player left the game', socket.id);
+  socket.on('this client is ready to play', function() {
+    if (lobby.players[socket.id]) {
+      logger(lobby.players[socket.id].name + ' is ready to play', 1);
+      lobby.players[socket.id].isReady = true;
+      socket.broadcast.emit('a client is ready to play', socket.id);
+      if (allReadyToPlay()) {
+        startGame();
+        io.sockets.emit('server tells all clients to start game');
+      }
+    }
+  });
+
+  /*
+  * Game listeners
+  */
+
+  socket.on('this client is in the game', function() {
+    if (lobby.players[socket.id]) {
+      logger(lobby.players[socket.id].name + ' is in the game', 1);
+      if (!game.players[socket.id]) {
+        // The client is attempting to join a game in progress so tell this
+        // to all other clients
+        var lobbyPlayer = lobby.players[socket.id];
+        var player = addPlayer(socket.id, lobbyPlayer.name, lobbyPlayer.character);
+        socket.broadcast.emit('a new player joins the game', player);
+        logger(player.name + ' joins a game in progress', 1);
+      }
+      socket.emit('server sending game state', game);
+    }
   });
   
   // Sent by each client every 35ms
-  socket.on("update server on player's actions", function(updates) {
+  socket.on('this client sends updates to server', function(clientUpdates) {
     if (game.players[socket.id]) {
-      playerToUpdate = gameUpdates.playerUpdates[socket.id];
-      if (playerToUpdate) {
-        playerToUpdate.positions = playerToUpdate.positions.concat(updates.positions);
+      logger(game.players[socket.id] + ' sends an update packet', 3);
+      var player = gameUpdates.playerUpdates[socket.id];
+      if (player) {
+        player.positions = player.positions.concat(clientUpdates.positions);
       } else {
-        gameUpdates.playerUpdates[socket.id] = updates;
+        gameUpdates.playerUpdates[socket.id] = clientUpdates;
       }
+    }
+  });
+
+  socket.on('this client exits the current game to lobby', function() {
+    if (game.players[socket.id]) {
+      logger(game.players[socket.id].name + ' exits the current game to lobby', 1);
+      socket.broadcast.emit('a client exits the current game to lobby', socket.id);
+      delete game.players[socket.id];
+    }
+    if (lobby.players[socket.id]) {
+      lobby.players[socket.id].isReady = false;
+    }
+    // If game is empty, switch back to lobby for everyone
+    if (game.currentState == 1 && noPlayersInGame()) {
+      logger('game empty, switch to lobby state', 1);
+      switchToLobbyState();
+    }
+  });
+
+  /*
+  * Misc. listeners
+  */
+
+  socket.on('disconnect', function(data) {
+    if (lobby.players[socket.id]) {
+      console.log(lobby.players[socket.id].name  + ' left the game');
+      // Tell all other clients that the player left
+      socket.broadcast.emit('a player left the game', socket.id);
+      delete lobby.players[socket.id];
+    }
+    if (game.players[socket.id]) {
+      delete game.players[socket.id];
     }
   });
 });
 
+/*
+ * Intervals
+ */
+
 // Every 35ms, tell all clients about changes in the game world not under
 // their control in the past 35ms
 setInterval(function() { 
-  io.sockets.emit('updates from the server', gameUpdates);
-  gameUpdates = initGameUpdates();
+  if (game.currentState == 1) {
+    io.sockets.emit('server sends updates', gameUpdates);
+    gameUpdates = initGameUpdates();
+  }
 }, 35);
 
 /*
  * Helper functions
  */
 
+function logger(message, debugLevel) {
+  if (gameLogLevel >= debugLevel) {
+    console.log(message);
+  }
+}
+
+function initGame() {
+  return {
+    // States:
+    // 0 - In lobby, forming teams
+    // 1 - Playing game
+    currentState: 0,
+    players: {}
+  };
+}
+
 function initGameUpdates() {
   return { playerUpdates: {} };
 }
 
+function addToLobby(id, name) {
+  lobby.players[id] = { 
+    id: id,
+    name: name,
+    character: 0,
+    isReady: false
+  };
+}
+
+function sendLobbyState(socket) {
+  socket.emit('server sends lobby state', {
+    mainPlayerId: socket.id,
+    currentState: game.currentState,
+    lobby: lobby
+  });
+}
+
+function allReadyToPlay() {
+  for (key in lobby.players) {
+    if (!lobby.players[key].isReady) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function startGame() {
+  game.players = {};
+  for (key in lobby.players) {
+    var player = lobby.players[key];
+    addPlayer(key, player.name, player.character);
+  }
+  gameUpdates = initGameUpdates();
+  game.currentState = 1;
+}
+
 // Add a player to the game world
-function addPlayer(id) {
+function addPlayer(id, name, character) {
   game.players[id] = {
     id: id,
+    name: name,
+    character: character,
     updates: []
   };
+  return game.players[id];
+}
+
+// Check if all players have exited game
+function noPlayersInGame() {
+  return Object.keys(game.players).length == 0;
+}
+
+function switchToLobbyState() {
+  game = initGame();
+  io.sockets.emit('server broadcasts that game is back to lobby state');
 }

@@ -1,3 +1,5 @@
+var CHARACTERS = ['MUNITIONS', 'MAGICIAN', 'MELEE', 'MEDIC', 'MACHINIST', 'DIRECTOR'];
+
 var surviveTheNight = {
 
   // Initialize the game
@@ -29,6 +31,7 @@ var surviveTheNight = {
     
     // Add game screens
     me.state.set(me.state.PLAY, new PlayScreen());
+    me.state.set(me.state.LOBBY, new LobbyScreen());
 
     // Add each entity ONCE into the entity pool.  Even if there
     // are 4 bots, if they are defined by the same entity, the entity 
@@ -37,17 +40,11 @@ var surviveTheNight = {
     me.entityPool.add('OtherSurvivorEntity', OtherSurvivorEntity);
 
     // First screen client sees is the play screen
-    me.state.change(me.state.PLAY);
-    
-    // Basic key bindings
-    me.input.bindKey(me.input.KEY.ENTER, 'enter', true);
-    me.input.bindKey(me.input.KEY.LEFT, 'left');
-    me.input.bindKey(me.input.KEY.RIGHT, 'right');
-    me.input.bindKey(me.input.KEY.UP,	'up');
-    me.input.bindKey(me.input.KEY.DOWN,	'down');
+    me.state.change(me.state.LOBBY);
 
-    // Tell the server that we have joined the game
-    socket.emit('joining game');
+    // Tell the server we joined the lobby
+    var mainName = prompt("Type your player's name:", Math.random().toString(36).substr(2, 4));
+    socket.emit('this client first joins the lobby', mainName);
   }
 };
 

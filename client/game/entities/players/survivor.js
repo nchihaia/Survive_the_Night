@@ -28,7 +28,7 @@ var MainSurvivorEntity = PlayerEntity.extend( {
     }
     
     // Record the player's current position to tell the server later
-    mainPlayerUpdates.positions.push( {
+    clientUpdates.positions.push( {
       pos_x: this.pos.x,
       pos_y: this.pos.y,
       animation: this.animation
