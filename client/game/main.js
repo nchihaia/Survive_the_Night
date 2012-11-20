@@ -1,5 +1,3 @@
-var CHARACTERS = ['MUNITIONS', 'MAGICIAN', 'MELEE', 'MEDIC', 'MACHINIST', 'DIRECTOR'];
-
 var surviveTheNight = {
 
   // Initialize the game
@@ -11,11 +9,11 @@ var surviveTheNight = {
     // This causes the game to still be running even if the user has the
     // webpage out of focus/minimized/on another tab
     me.sys.pauseOnBlur = false;
-    // 40fps limit
-    me.sys.fps = 40;
+    // 30fps limit
+    me.sys.fps = 30;
 
     // Create the game screen, warning player if browser isn't compatible 
-    if (!me.video.init('jsapp', 640, 448)) {
+    if (!me.video.init('jsapp', 960, 540, true)) {
       alert("Your browser doesn't support this game");
       return;
     }

@@ -1,9 +1,39 @@
+var PLAYERCLASSES = [ 
+  {
+    name: 'ASSAULT', 
+    descript: 'High damage combatant',
+    pros: ['high damage', 'fast'],
+    cons: ['low health'],
+    sprite: 'assaultMock'
+  },
+  {
+    name: 'HEAVY', 
+    descript: 'Durable tank',
+    pros: ['lots of health'],
+    cons: ['slow'],
+    sprite: 'heavyMock'
+  },
+  {
+    name: 'SUPPORT', 
+    descript: 'Versatile healer',
+    pros: ['heals nearby allies'],
+    cons: ['low health'],
+    sprite: 'supportMock'
+  },
+  {
+    name: 'DIRECTOR', 
+    descript: 'Really evil',
+    pros: ['nothing'],
+    cons: ['everything'],
+    sprite: 'directorMock'
+  }
+];
+
 // Abstract entity representing a player.  It could represent the 
 // client's character, a teammate's character, or a bot)
 var PlayerEntity = me.ObjectEntity.extend( {	
 
   init: function(x, y, settings) {
-    
     // Set the sprite image to be playerA 
     // (This is defined in client/game/assets/js)
     if (!settings.image) {
@@ -27,14 +57,14 @@ var PlayerEntity = me.ObjectEntity.extend( {
 
     // Set starting animation
     this.direction = 'down';
-    this.animation = this.direction;
+    this.animation = 'stand_' + this.direction;
     this.setCurrentAnimation(this.animation);
 
-    // Movements settings for this character.  Look at melonjs docs for more
+    // Movements settings for this entity.  Look at melonjs docs for more
     // info, but the names of these settings should be relatively self-explanatory
-    this.setVelocity(3, 3);
-    this.setMaxVelocity(4, 4);
-    this.setFriction(1.5, 1.5);
+    this.setVelocity(5, 5);
+    this.setMaxVelocity(6, 6);
+    this.setFriction(0.7, 0.7);
     this.gravity = 0;
     this.collidable = true;
   }

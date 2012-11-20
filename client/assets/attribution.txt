@@ -1,0 +1,5 @@
+mock sprites:
+http://untamed.wild-refuge.net/rmxpresources.php?characters
+
+mock tileset:
+http://www.hbgames.org/forums/viewtopic.php?f=160&t=65934

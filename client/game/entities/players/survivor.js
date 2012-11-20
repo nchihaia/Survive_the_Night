@@ -42,7 +42,6 @@ var MainSurvivorEntity = PlayerEntity.extend( {
 var OtherSurvivorEntity = PlayerEntity.extend( {
 
   init: function(x, y, settings) {
-
     // Call the parent constructor (PlayerEntity)
     this.parent(x, y, settings);
     this.diff_x = 0
@@ -50,7 +49,6 @@ var OtherSurvivorEntity = PlayerEntity.extend( {
   },
 
  update: function() {
-    
     server_movement(this);
     this.parent(this);
 

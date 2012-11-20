@@ -1,16 +1,13 @@
-var startingGame = false;
-
 LobbyScreen = me.ScreenObject.extend( {
   init: function() {
     this.parent(true);
   },
 
   onResetEvent: function() {
-    this.pen =  new me.Font('Arial', 32);
-    this.pen.set('left');
     me.game.add(new me.ColorLayer('lightBlue', '#48b5b3', 1));
-    this.lobbySeparator = generateSeparator(78);
+    this.lobbySeparator = generateSeparator(me.video.getWidth() / 9);
     this.countdown = 3.95;
+    this.xCenter = me.video.getWidth() / 2;
 
     // init/re-init player
     if (lobby.players[mainPlayerId]) {
@@ -23,6 +20,18 @@ LobbyScreen = me.ScreenObject.extend( {
     me.input.bindKey(me.input.KEY.RIGHT, 'right', true);
     me.input.bindKey(me.input.KEY.UP,	'up', true);
     me.input.bindKey(me.input.KEY.DOWN,	'down', true);
+
+    // Add sample class models
+    this.sampleSprites = [];
+    for (var i=0; i < PLAYERCLASSES.length; i++) {
+      this.sampleSprites[i] = new PlayerEntity(0, 0, {
+        image: PLAYERCLASSES[i].sprite,
+        spritewidth: 32,
+        spriteheight: 48
+      }); 
+      me.game.add(this.sampleSprites[i], 2);
+      this.sampleSprites[i].resize(1.5);
+    }
   },
 
   onDestroyEvent: function() {
@@ -31,43 +40,52 @@ LobbyScreen = me.ScreenObject.extend( {
     me.input.unbindKey(me.input.KEY.RIGHT);
     me.input.unbindKey(me.input.KEY.UP);
     me.input.unbindKey(me.input.KEY.DOWN);
+
+    // remove sample player models
+    for (var i=0; i < this.sampleSprites.length; i++) {
+      me.game.remove(this.sampleSprites[i]);
+    }
   },
 
   update: function() {
-    if (mainPlayerId == undefined) {
-      // Re-request game state from server if somehow message wasn't received
-      logger('Establishing connection with server', 1);
-      socket.emit('this client is re-requesting the lobby state');
-    } else if (parseInt(this.countdown) <= 0) {
-      // A game is ready to start so switch to the play screen
-      me.state.change(me.state.PLAY);
-    } else {
-      var player = lobby.players[mainPlayerId];
+    if (mainPlayerId == undefined && this.serverConnId == undefined) {
+      logger('Need to re-request game state from server', 1);
+      this.serverConnId = setInterval(reestablishServerConn, 2000); 
+    } else if (mainPlayerId) {
+      if (this.serverConnId) {
+        clearInterval(this.serverConnId);
+      }
+      if (parseInt(this.countdown) <= 0) {
+        // A game is ready to start so switch to the play screen
+        me.state.change(me.state.PLAY);
+      } else {
+        var player = lobby.players[mainPlayerId];
 
-      // Left-right character choosing
-      if (!player.isReady) {
-        if (me.input.isKeyPressed('left')) {
-          player.character--;
-          if (player.character < 0) {
-            player.character = CHARACTERS.length - 1;
+        // Left-right class choosing
+        if (!player.isReady) {
+          if (me.input.isKeyPressed('left')) {
+            player.charclass--;
+            if (player.charclass < 0) {
+              player.charclass = PLAYERCLASSES.length - 1;
+            }
+            socket.emit('this client changes their class', player.charclass)
+          } else if (me.input.isKeyPressed('right')) {
+            player.charclass++;
+            if (player.charclass > PLAYERCLASSES.length - 1) {
+              player.charclass = 0;
+            }
+            socket.emit('this client changes their class', player.charclass)
           }
-          socket.emit('this client changes their character', player.character)
-        } else if (me.input.isKeyPressed('right')) {
-          player.character++;
-          if (player.character > CHARACTERS.length - 1) {
-            player.character = 0;
-          }
-          socket.emit('this client changes their character', player.character)
-        }
 
-        if (me.input.isKeyPressed('enter')) {
-          if (game.currentState == 0) {
-            socket.emit('this client is ready to play');
-          } else if (game.currentState == 1) {
-            // A game is already in progress so switch straight to the play screen
-            me.state.change(me.state.PLAY);
+          if (me.input.isKeyPressed('enter')) {
+            if (game.currentState == 0) {
+              socket.emit('this client is ready to play');
+            } else if (game.currentState == 1) {
+              // A game is already in progress so switch straight to the play screen
+              me.state.change(me.state.PLAY);
+            }
+            lobby.players[mainPlayerId].isReady = true;
           }
-          lobby.players[mainPlayerId].isReady = true;
         }
       }
     }
@@ -78,90 +96,127 @@ LobbyScreen = me.ScreenObject.extend( {
   draw: function(context) {
     if (mainPlayerId == undefined) {
       context.font = 'bold 25px Oswald';
-      this.pen.draw(context, 'Establishing connection with game server...', 80, 170);
+      context.textAlign = 'center';
+      context.fillText(context, 'Establishing connection with game server...', this.xCenter, 200);
     } else {
-      var yPos = 10;
+      var yPos = 40;
 
       /*
       * Title
       */
-      context.font = 'bold 32px Jolly Lodger';
-      this.pen.draw(context, 'SURVIVE THE NIGHT', 200 , yPos);
+      context.font = 'bold 40px Jolly Lodger';
+      context.textAlign = 'center';
+      context.fillStyle = 'blue';
+      context.fillText('SURVIVE THE NIGHT', this.xCenter, yPos);
 
       /*
-      * Character select
+      * Class select
       */
-      var characterXPos = 20;
-      yPos += 90;
-      context.font = '20px Oswald';
-      for (var i=0; i < CHARACTERS.length; i++) {
-        if (i == lobby.players[mainPlayerId].character) {
+      var classXPos = 130;
+      yPos += 120;
+      for (var i=0; i < PLAYERCLASSES.length; i++) {
+        // Draw director further right than the other classes
+        if (i == PLAYERCLASSES.length - 1) {
+          classXPos = classXPos + 100;
+        } 
+        // Position sample sprite
+        this.sampleSprites[i].pos.x = classXPos - 15;
+        this.sampleSprites[i].pos.y = yPos - 90;
+        // Highlight the currently selected class
+        if (i == lobby.players[mainPlayerId].charclass) {
           context.fillStyle = 'white';
+          this.sampleSprites[i].setCurrentAnimation('down');
         } else {
           context.fillStyle = 'black';
+          this.sampleSprites[i].setCurrentAnimation('stand_down');
         }
-        // Draw director further right than the other chars
-        if (i == CHARACTERS.length - 1) {
-          characterXPos = characterXPos + 30;
-        } 
-        this.pen.draw(context, CHARACTERS[i], characterXPos, yPos);
-        characterXPos += CHARACTERS[i].length * 12 + 10;
+        // Draw class name
+        context.font = '25px Oswald';
+        context.fillText(PLAYERCLASSES[i].name, classXPos, yPos);
+        // Draw class description
+        context.fillStyle = 'black';
+        context.font = '16px Droid Sans';
+        context.fillText(PLAYERCLASSES[i].descript, classXPos, yPos + 30);
+        // Draw pros and cons
+        context.font = '14px Droid Sans';
+        var attrYPos = yPos + 50;
+        // Pros
+        for (var j=0; j < PLAYERCLASSES[i].pros.length; j++) {
+          context.fillStyle = 'green';
+          context.fillText('+ ' + PLAYERCLASSES[i].pros[j], classXPos, attrYPos);
+          attrYPos += 15;
+        }
+        // Cons
+        for (var k=0; k < PLAYERCLASSES[i].cons.length; k++) {
+          context.fillStyle = 'red';
+          context.fillText('- ' + PLAYERCLASSES[i].cons[k], classXPos, attrYPos);
+          attrYPos += 15;
+        }
+        classXPos += 200;
       }
-      this.pen.draw(context, CHARACTERS[0], characterXPos + 30, yPos);
 
       /*
       * Ready-up message
       */
-      context.fillStyle = 'red';
+      context.fillStyle = 'black';
       context.font = 'bold 18px Droid Sans';
-      yPos += 50;
+      yPos += 100;
       if (game.currentState == 0) {
         // For when a game hasn't started yet and everyone is in the lobby
         if (lobby.allReady) {
-          this.pen.draw(context, 'Starting game in: ' + parseInt(this.countdown), 80, yPos);
+          context.fillText('Starting game in: ' + parseInt(this.countdown), this.xCenter, yPos);
           this.countdown -= .05;
         } else if (lobby.players[mainPlayerId].isReady) {
-          this.pen.draw(context, 'Please wait semi-patiently until all players are ready', 70, yPos);
+          context.fillText('Please wait semi-patiently until all players are ready', this.xCenter, yPos);
         } else {
-          this.pen.draw(context, 'Choose your character then press ENTER to ready up', 80, yPos);
+          context.fillText('Choose your class then press ENTER to ready up', this.xCenter, yPos);
         }
       } else if (game.currentState == 1) {
         // For when a game is in progress and the client is joining in
-        this.pen.draw(context, 'A game is in progress! Choose a character then press ENTER to join', 10, yPos);
+        context.fillText('A game is in progress! Choose a class then press ENTER to join', this.xCenter, yPos);
       }
 
       /*
       * Players in lobby
       */
       // Draw: separator
-      yPos += 5;
+      yPos += 30;
       context.font = '40px Oswald';
       context.fillStyle = 'black';
-      this.pen.draw(context, this.lobbySeparator, 10, yPos);
+      context.textAlign = 'center';
+      context.fillText(this.lobbySeparator, this.xCenter, yPos);
 
       // Draw: 'Players:'
-      yPos += 50;
+      yPos += 25;
       context.font = 'bold 18px Oswald';
       context.fillStyle = 'black';
-      this.pen.draw(context, 'Players:', 20, yPos);
+      context.fillText('Players:', this.xCenter, yPos);
 
       // Draw: names of players
-      yPos += 40;
+      yPos += 30;
       context.font = '16px Droid Sans';
       context.fillStyle = 'black';
       for (key in lobby.players) {
         var player = lobby.players[key];
-        var displayText = player.name + ' - ' + CHARACTERS[player.character];
-        // Append ready message if this player is ready to play
+        var displayText = player.name + ' - ' + PLAYERCLASSES[player.charclass].name;
+        // Append additional message if player is ready or in the game
         if (player.isReady) {
           if (game.currentState == 0) {
             displayText += ' - ' + 'READY';
           } else if (game.currentState == 1) {
             displayText += ' - ' + 'IN GAME';
           }
+        } else if (game.currentState == 0) {
+          displayText += ' - ' + 'IN LOBBY';
         }
-        this.pen.draw(context, displayText, 20, yPos);
-        yPos += 25;
+        // Purple text for main player, black for everyone else
+        if (key == mainPlayerId) {
+          context.fillStyle = 'purple';
+        } else {
+          context.fillStyle = 'black';
+        }
+        context.fillText(displayText, this.xCenter, yPos);
+        yPos += 20;
       }
     }
   }

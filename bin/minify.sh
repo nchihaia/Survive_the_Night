@@ -1,0 +1,2 @@
+#!/bin/bash
+cat ../client/game/main.js ../client/game/assets.js ../client/game/screens/play.js ../client/game/screens/lobby.js ../client/game/entities/players/player.js ../client/game/entities/players/survivor.js ../client/game/entities/players/shared_functions.js ../client/game/game_client/game_client.js ../client/game/game_client/interval.js ../client/game/game_client/listeners.js | uglifyjs -o ../client/survive_the_night.min.js

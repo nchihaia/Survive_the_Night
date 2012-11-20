@@ -54,13 +54,13 @@ io.sockets.on('connection', function(socket) {
     sendLobbyState(socket);
   });
 
-  socket.on('this client changes their character', function(character) {
+  socket.on('this client changes their class', function(charclass) {
     if (lobby.players[socket.id]) {
-      logger(lobby.players[socket.id].name + ' switches to ' + character, 3);
-      lobby.players[socket.id].character = character
-      socket.broadcast.emit('a client changes their character', {
+      logger(lobby.players[socket.id].name + ' switches to ' + charclass, 4);
+      lobby.players[socket.id].charclass = charclass
+      socket.broadcast.emit('a client changes their class', {
         id: socket.id,
-        character: character
+        charclass: charclass
       });
     }
   });
@@ -88,7 +88,7 @@ io.sockets.on('connection', function(socket) {
         // The client is attempting to join a game in progress so tell this
         // to all other clients
         var lobbyPlayer = lobby.players[socket.id];
-        var player = addPlayer(socket.id, lobbyPlayer.name, lobbyPlayer.character);
+        var player = addPlayer(socket.id, lobbyPlayer.name, lobbyPlayer.charclass);
         socket.broadcast.emit('a new player joins the game', player);
         logger(player.name + ' joins a game in progress', 1);
       }
@@ -99,7 +99,7 @@ io.sockets.on('connection', function(socket) {
   // Sent by each client every 35ms
   socket.on('this client sends updates to server', function(clientUpdates) {
     if (game.players[socket.id]) {
-      logger(game.players[socket.id] + ' sends an update packet', 3);
+      logger(game.players[socket.id] + ' sends an update packet', 4);
       var player = gameUpdates.playerUpdates[socket.id];
       if (player) {
         player.positions = player.positions.concat(clientUpdates.positions);
@@ -139,6 +139,15 @@ io.sockets.on('connection', function(socket) {
     if (game.players[socket.id]) {
       delete game.players[socket.id];
     }
+    // If game is empty, switch back to lobby for everyone
+    if (game.currentState == 1 && noPlayersInGame()) {
+      logger('game empty, switch to lobby state', 1);
+      switchToLobbyState();
+    } else if (game.currentState == 0 && allReadyToPlay()) {
+    // If in lobby, all remaining players might be ready
+      startGame();
+      io.sockets.emit('server tells all clients to start game');
+    }
   });
 });
 
@@ -146,14 +155,14 @@ io.sockets.on('connection', function(socket) {
  * Intervals
  */
 
-// Every 35ms, tell all clients about changes in the game world not under
-// their control in the past 35ms
+// Every 100ms, tell all clients about changes in the game world not under
+// their control in the past 100ms
 setInterval(function() { 
   if (game.currentState == 1) {
     io.sockets.emit('server sends updates', gameUpdates);
     gameUpdates = initGameUpdates();
   }
-}, 35);
+}, 100);
 
 /*
  * Helper functions
@@ -183,7 +192,7 @@ function addToLobby(id, name) {
   lobby.players[id] = { 
     id: id,
     name: name,
-    character: 0,
+    charclass: 0,
     isReady: false
   };
 }
@@ -209,18 +218,18 @@ function startGame() {
   game.players = {};
   for (key in lobby.players) {
     var player = lobby.players[key];
-    addPlayer(key, player.name, player.character);
+    addPlayer(key, player.name, player.charclass);
   }
   gameUpdates = initGameUpdates();
   game.currentState = 1;
 }
 
 // Add a player to the game world
-function addPlayer(id, name, character) {
+function addPlayer(id, name, charclass) {
   game.players[id] = {
     id: id,
     name: name,
-    character: character,
+    charclass: charclass,
     updates: []
   };
   return game.players[id];

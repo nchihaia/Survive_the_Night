@@ -1,6 +1,6 @@
 var assets = [	
 
-  /** 
+  /*
   * Sprites
   */
   {
@@ -9,7 +9,31 @@ var assets = [
     src: 'assets/sprites/playerA.png'
   },
 
-  /**
+  {
+    name: 'assaultMock',
+    type:'image',	
+    src: 'assets/sprites/assaultMock.png'
+  },
+
+    {
+    name: 'heavyMock',
+    type:'image',	
+    src: 'assets/sprites/heavyMock.png'
+  },
+
+    {
+    name: 'supportMock',
+    type:'image',	
+    src: 'assets/sprites/supportMock.png'
+  },
+
+    {
+    name: 'directorMock',
+    type:'image',	
+    src: 'assets/sprites/directorMock.png'
+  },
+
+  /*
   * Tilesets 
   */
   {
@@ -24,7 +48,7 @@ var assets = [
     src: 'assets/maps/metatiles32x32.png'
   },
 
-  /**
+  /*
   * Levels
   */
   {

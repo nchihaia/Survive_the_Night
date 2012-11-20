@@ -14,10 +14,10 @@ socket.on('a new player joins the lobby', function(data) {
   addToLobby(data.id, data.name); 
 });
 
-socket.on('a client changes their character', function(data) {
+socket.on('a client changes their class', function(data) {
   if (lobby.players[data.id]) {
-    logger(lobby.players[data.id].name + ' changes their character', 3);
-    lobby.players[data.id].character = data.character;
+    logger(lobby.players[data.id].name + ' changes their class', 4);
+    lobby.players[data.id].charclass = data.charclass;
   }
 });
 
@@ -39,12 +39,12 @@ socket.on('server sending game state', function(serverGame) {
   logger('Server sends game state', 1);
   for (key in serverGame.players) {
     var player = serverGame.players[key];
-    addPlayer(key, player.name, player.character);
+    addPlayer(key, player.name, player.charclass);
   } 
 });
 
 socket.on('server sends updates', function(gameUpdates) {
-  logger('Server sends update packet', 3);
+  logger('Server sends update packet', 4);
   if (inCurrentGame()) {
     for (key in gameUpdates.playerUpdates) {
       updatePlayer(key, gameUpdates.playerUpdates[key]);
@@ -56,7 +56,7 @@ socket.on('a new player joins the game', function(player) {
   logger(player.name + ' joins the game', 1);
   // This message is only relevant to players already in the game
   if (game.currentState == 1 && lobby.players[mainPlayerId].isReady) {
-    addPlayer(player.id, player.name, player.character); 
+    addPlayer(player.id, player.name, player.charclass); 
   }
 });
 
@@ -82,11 +82,19 @@ socket.on('server broadcasts that game is back to lobby state', function() {
  * Misc. listeners
  */
 
-socket.on('a player left the game', function(playerId) {
-  if (game.players[playerId]) {
-    logger(game.players[playerId].name + ' left the game');
-    me.game.remove(game.players[playerId]);
-    delete game.players[playerId];
+socket.on('a player left the game', function(id) {
+  var playerName = undefined;
+  if (game.players[id]) {
+    playerName = game.players[id].name;
+    me.game.remove(game.players[id]);
+    delete game.players[id];
+  }
+  if (lobby.players[id]) {
+    playerName = lobby.players[id].name;
+    delete lobby.players[id];
+  }
+  if (playerName) {
+    logger(playerName + ' left the game', 1);
   }
 });
 
@@ -102,7 +110,7 @@ function addToLobby(id, name) {
   lobby.players[id] = { 
     id: id,
     name: name,
-    character: 0,
+    charclass: 0,
     isReady: false
   };
 }
@@ -111,12 +119,16 @@ function addToLobby(id, name) {
  * Game helpers
  */
 
-function addPlayer(id, name, character) {
+function addPlayer(id, name, charclass) {
   // Create a new instance of the entity representing the teammate
-  var player = new OtherSurvivorEntity(100, 100, {});
+  var player = new OtherSurvivorEntity(100, 100, {
+    image: PLAYERCLASSES[charclass].sprite,
+    spritewidth: 32,
+    spriteheight: 48
+  });
   player.serverId = id;
   player.name = name;
-  player.character = character;
+  player.charclass = charclass;
   player.updates = { positions: [] };
   game.players[id] = player;
   
@@ -132,7 +144,8 @@ function inCurrentGame() {
   return mainPlayerId && lobby.players[mainPlayerId].isReady && game.currentState == 1;
 }
 
-
+// Handle the updates that the server sends this client about
+// a player controlled by another client
 function updatePlayer(id, updates) {
   var player = game.players[id];
   if (id != mainPlayerId && player) {
@@ -146,7 +159,7 @@ function updatePlayer(id, updates) {
       if (sliceStart > MARGIN) {
         sliceEnd = positions.length - 1;
         player.updates.positions = positions.slice(sliceStart, sliceEnd);
-        console.log(id + ': skipped ' + sliceStart + ' frames');
+        logger(player.name + ': skipped ' + sliceStart + 'frames', 3);
       }
     }
   }
