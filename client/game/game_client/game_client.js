@@ -19,10 +19,6 @@ var lobby = {
   allReady: false
 }
 
-// Decide the maximum number of update items (1 item = 1 frame) to keep
-var margin = 1;
-var max_frames_to_keep = parseInt(margin / 6);
-
 function initGame() {
   return {
     // States:
@@ -35,6 +31,10 @@ function initGame() {
 
 function initClientUpdates() {
   return { positions: [] };
+}
+
+function noUpdatesToSend() {
+  return clientUpdates.positions.length == 0;
 }
 
 function logger(message, logLevel) {

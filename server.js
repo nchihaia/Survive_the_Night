@@ -158,7 +158,7 @@ io.sockets.on('connection', function(socket) {
 // Every 100ms, tell all clients about changes in the game world not under
 // their control in the past 100ms
 setInterval(function() { 
-  if (game.currentState == 1) {
+  if (game.currentState == 1 && !noUpdatesToSend()) {
     io.sockets.emit('server sends updates', gameUpdates);
     gameUpdates = initGameUpdates();
   }
@@ -186,6 +186,10 @@ function initGame() {
 
 function initGameUpdates() {
   return { playerUpdates: {} };
+}
+
+function noUpdatesToSend() {
+  return Object.keys(gameUpdates.playerUpdates).length == 0;
 }
 
 function addToLobby(id, name) {

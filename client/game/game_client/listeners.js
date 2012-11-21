@@ -130,6 +130,15 @@ function addPlayer(id, name, charclass) {
   player.name = name;
   player.charclass = charclass;
   player.updates = { positions: [] };
+
+  // Decide the max number of update items to keep and the margin (cutoff point)
+  // that maxUpdatesToKeep has to go over before we trim the number of updates 
+  // down to equal maxUpdatesToKeep.
+  // Higher values => less stuttering, more delay
+  // Lower values => less delay, possibly more stuttering
+  player.updatesMargin = 1;
+  player.maxUpdatesToKeep = parseInt(player.updatesMargin / 6);
+
   game.players[id] = player;
   
   // Tell melonJS about the player
@@ -154,16 +163,16 @@ function updatePlayer(id, updates) {
 
     // Decide if we need to skip some frames if there are too much
     // update items queued up
-    if (positions.length > max_frames_to_keep) {
-      sliceStart = positions.length - max_frames_to_keep;
-      if (sliceStart > margin) {
+    if (positions.length > player.maxUpdatesToKeep) {
+      sliceStart = positions.length - player.maxUpdatesToKeep;
+      if (sliceStart > player.updatesMargin) {
         sliceEnd = positions.length - 1;
         player.updates.positions = positions.slice(sliceStart, sliceEnd);
         logger(player.name + ': skipped ' + sliceStart + ' frames', 3);
         // Increase margin if client keeps on skipping update items
-        margin++;
-        max_frames_to_keep = parseInt(margin / 6);
-        logger('Margin is: ' + margin + ', Max frames is: ' + max_frames_to_keep, 3);
+        player.updatesMargin++;
+        player.maxUpdatesToKeep = parseInt(player.updatesMargin / 6);
+        logger(player.name + ': margin is ' + player.updatesMargin + ', max frames is ' + player.maxUpdatesToKeep, 3);
       }
     }
   }

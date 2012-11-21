@@ -12,6 +12,12 @@ var MainSurvivorEntity = PlayerEntity.extend( {
 
   // Automatically called by melonjs once per tick
   update: function() {
+    
+    // Remember previous actions so we can check whether or not
+    // player has performed a new action
+    var prev_xpos = this.pos.x;
+    var prev_ypos = this.pos.y;
+    var prev_animation = this.animation;
 
     keyboard_movement(this);
 
@@ -27,12 +33,17 @@ var MainSurvivorEntity = PlayerEntity.extend( {
       this.parent(this);
     }
     
-    // Record the player's current position to tell the server later
-    clientUpdates.positions.push( {
-      pos_x: this.pos.x,
-      pos_y: this.pos.y,
-      animation: this.animation
-    });
+    // Record the player's current position to tell the server later if
+    // an action was detected in this tick
+    if (prev_xpos != this.pos.x || prev_ypos != this.pos.y || prev_animation != this.animation) {
+      clientUpdates.positions.push( {
+        pos_x: this.pos.x,
+        pos_y: this.pos.y,
+        animation: this.animation
+      });
+    } else {
+      logger('No new action detected on this tick', 4);
+    }
 
     return true;
   }

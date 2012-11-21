@@ -24,7 +24,8 @@ function keyboard_movement(player) {
 
 function server_movement(player) {
   // If there are no more updates about player player's movements,
-  // don't do anything
+  // try to guess what they might do.  (This might conflict with the new
+  // feature of not sending updates when a player performs no action)
   if (player.updates.positions.length == 0) {
 
     if (player.diff_x == 0 && player.diff_y == 0) {
@@ -33,14 +34,16 @@ function server_movement(player) {
 
     if (!isNaN(player.diff_x)) {
       player.pos.x += player.diff_x;
+      console.log('Guessing x...');
     }
 
     if (!isNaN(player.diff_y)) {
       player.pos.y += player.diff_y;
+      console.log('Guessing y...');
     }
   } else {
     // Pop an item off player teammate's update stack and set the
-    // teammate's position to the coordinates defined by it
+    // player's position to the coordinates defined by it
     updateItem = player.updates.positions.shift();
 
     player.diff_x = updateItem.pos_x - player.pos_x
