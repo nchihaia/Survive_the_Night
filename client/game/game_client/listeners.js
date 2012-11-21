@@ -154,12 +154,16 @@ function updatePlayer(id, updates) {
 
     // Decide if we need to skip some frames if there are too much
     // update items queued up
-    if (positions.length > MAX_FRAMES_TO_KEEP) {
-      sliceStart = positions.length - MAX_FRAMES_TO_KEEP;
-      if (sliceStart > MARGIN) {
+    if (positions.length > max_frames_to_keep) {
+      sliceStart = positions.length - max_frames_to_keep;
+      if (sliceStart > margin) {
         sliceEnd = positions.length - 1;
         player.updates.positions = positions.slice(sliceStart, sliceEnd);
-        logger(player.name + ': skipped ' + sliceStart + 'frames', 3);
+        logger(player.name + ': skipped ' + sliceStart + ' frames', 3);
+        // Increase margin if client keeps on skipping update items
+        margin++;
+        max_frames_to_keep = parseInt(margin / 6);
+        logger('Margin is: ' + margin + ', Max frames is: ' + max_frames_to_keep, 3);
       }
     }
   }

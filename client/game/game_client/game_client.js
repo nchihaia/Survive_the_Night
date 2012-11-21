@@ -2,7 +2,7 @@
 var socket = io.connect('http:\/\/localhost:5000');
 // var socket = io.connect('http:\/\/survivethenight.herokuapp.com');
 
-var gameLogLevel = 2;
+var gameLogLevel = 3;
 
 var mainPlayerId = undefined;
 
@@ -20,8 +20,8 @@ var lobby = {
 }
 
 // Decide the maximum number of update items (1 item = 1 frame) to keep
-var MAX_FRAMES_TO_KEEP = 3;
-var MARGIN = 17;
+var margin = 1;
+var max_frames_to_keep = parseInt(margin / 6);
 
 function initGame() {
   return {
