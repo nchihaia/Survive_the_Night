@@ -21,7 +21,7 @@ var PlayScreen = me.ScreenObject.extend( {
     game.currentState = 1;
 
     this.mainPlayerEntity = new MainSurvivorEntity(200, 200, {
-      image: PLAYERCLASSES[lobby.players[mainPlayerId].charclass].sprite,
+      image: CHARCLASSES[lobby.players[mainPlayerId].charclass].sprite,
       spritewidth: 32,
       spriteheight: 48
     });

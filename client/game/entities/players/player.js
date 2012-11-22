@@ -1,34 +1,3 @@
-var PLAYERCLASSES = [ 
-  {
-    name: 'ASSAULT', 
-    descript: 'High damage combatant',
-    pros: ['high damage', 'fast'],
-    cons: ['low health'],
-    sprite: 'assaultMock'
-  },
-  {
-    name: 'HEAVY', 
-    descript: 'Durable tank',
-    pros: ['lots of health'],
-    cons: ['slow'],
-    sprite: 'heavyMock'
-  },
-  {
-    name: 'SUPPORT', 
-    descript: 'Versatile healer',
-    pros: ['heals nearby allies'],
-    cons: ['low health'],
-    sprite: 'supportMock'
-  },
-  {
-    name: 'DIRECTOR', 
-    descript: 'Really evil',
-    pros: ['nothing'],
-    cons: ['everything'],
-    sprite: 'directorMock'
-  }
-];
-
 // Abstract entity representing a player.  It could represent the 
 // client's character, a teammate's character, or a bot)
 var PlayerEntity = me.ObjectEntity.extend( {	

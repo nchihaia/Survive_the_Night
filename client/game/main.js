@@ -3,9 +3,6 @@ var surviveTheNight = {
   // Initialize the game
   onload: function() {
 
-    /* 
-     * Debug stuff, comment out in production
-     */
     // This causes the game to still be running even if the user has the
     // webpage out of focus/minimized/on another tab
     me.sys.pauseOnBlur = false;

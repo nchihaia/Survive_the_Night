@@ -5,6 +5,7 @@ var app = express.createServer(express.logger());
 // Set the root directory of where to serve files to clients
 app.configure(function() {
   app.use(express.static(__dirname + '/client'));
+  app.use(express.static(__dirname + '/shared'));
 });
 
 // Our server listens on 5000 if the system doesn't specify a port

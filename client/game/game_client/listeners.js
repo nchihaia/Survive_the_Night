@@ -122,14 +122,19 @@ function addToLobby(id, name) {
 function addPlayer(id, name, charclass) {
   // Create a new instance of the entity representing the teammate
   var player = new OtherSurvivorEntity(100, 100, {
-    image: PLAYERCLASSES[charclass].sprite,
+    image: CHARCLASSES[charclass].sprite,
     spritewidth: 32,
     spriteheight: 48
   });
+  
   player.serverId = id;
   player.name = name;
-  player.charclass = charclass;
   player.updates = { positions: [] };
+
+  // Class-based attributes
+  player.charclass = charclass;
+  player.maxHp = CHARCLASSES[charclass].baseHp;
+  player.currHp = player.maxHp;
 
   // Decide the max number of update items to keep and the margin (cutoff point)
   // that maxUpdatesToKeep has to go over before we trim the number of updates 
@@ -141,12 +146,11 @@ function addPlayer(id, name, charclass) {
 
   game.players[id] = player;
   
-  // Tell melonJS about the player
+  // Add the player into the game world
   if (id != mainPlayerId) {
     me.game.add(player, 2);
     me.game.sort();
   }
-  // logger(name + ' joined', 1);
 }
 
 function inCurrentGame() {

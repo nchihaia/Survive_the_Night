@@ -23,9 +23,9 @@ LobbyScreen = me.ScreenObject.extend( {
 
     // Add sample class models
     this.sampleSprites = [];
-    for (var i=0; i < PLAYERCLASSES.length; i++) {
+    for (var i=0; i < CHARCLASSES.length; i++) {
       this.sampleSprites[i] = new PlayerEntity(0, 0, {
-        image: PLAYERCLASSES[i].sprite,
+        image: CHARCLASSES[i].sprite,
         spritewidth: 32,
         spriteheight: 48
       }); 
@@ -66,12 +66,12 @@ LobbyScreen = me.ScreenObject.extend( {
           if (me.input.isKeyPressed('left')) {
             player.charclass--;
             if (player.charclass < 0) {
-              player.charclass = PLAYERCLASSES.length - 1;
+              player.charclass = CHARCLASSES.length - 1;
             }
             socket.emit('this client changes their class', player.charclass)
           } else if (me.input.isKeyPressed('right')) {
             player.charclass++;
-            if (player.charclass > PLAYERCLASSES.length - 1) {
+            if (player.charclass > CHARCLASSES.length - 1) {
               player.charclass = 0;
             }
             socket.emit('this client changes their class', player.charclass)
@@ -114,9 +114,9 @@ LobbyScreen = me.ScreenObject.extend( {
       */
       var classXPos = 130;
       yPos += 120;
-      for (var i=0; i < PLAYERCLASSES.length; i++) {
+      for (var i=0; i < CHARCLASSES.length; i++) {
         // Draw director further right than the other classes
-        if (i == PLAYERCLASSES.length - 1) {
+        if (i == CHARCLASSES.length - 1) {
           classXPos = classXPos + 100;
         } 
         // Position sample sprite
@@ -132,24 +132,24 @@ LobbyScreen = me.ScreenObject.extend( {
         }
         // Draw class name
         context.font = '25px Oswald';
-        context.fillText(PLAYERCLASSES[i].name, classXPos, yPos);
+        context.fillText(CHARCLASSES[i].name, classXPos, yPos);
         // Draw class description
         context.fillStyle = 'black';
         context.font = '16px Droid Sans';
-        context.fillText(PLAYERCLASSES[i].descript, classXPos, yPos + 30);
+        context.fillText(CHARCLASSES[i].descript, classXPos, yPos + 30);
         // Draw pros and cons
         context.font = '14px Droid Sans';
         var attrYPos = yPos + 50;
         // Pros
-        for (var j=0; j < PLAYERCLASSES[i].pros.length; j++) {
+        for (var j=0; j < CHARCLASSES[i].pros.length; j++) {
           context.fillStyle = 'green';
-          context.fillText('+ ' + PLAYERCLASSES[i].pros[j], classXPos, attrYPos);
+          context.fillText('+ ' + CHARCLASSES[i].pros[j], classXPos, attrYPos);
           attrYPos += 15;
         }
         // Cons
-        for (var k=0; k < PLAYERCLASSES[i].cons.length; k++) {
+        for (var k=0; k < CHARCLASSES[i].cons.length; k++) {
           context.fillStyle = 'red';
-          context.fillText('- ' + PLAYERCLASSES[i].cons[k], classXPos, attrYPos);
+          context.fillText('- ' + CHARCLASSES[i].cons[k], classXPos, attrYPos);
           attrYPos += 15;
         }
         classXPos += 200;
@@ -198,7 +198,7 @@ LobbyScreen = me.ScreenObject.extend( {
       context.fillStyle = 'black';
       for (key in lobby.players) {
         var player = lobby.players[key];
-        var displayText = player.name + ' - ' + PLAYERCLASSES[player.charclass].name;
+        var displayText = player.name + ' - ' + CHARCLASSES[player.charclass].name;
         // Append additional message if player is ready or in the game
         if (player.isReady) {
           if (game.currentState == 0) {
