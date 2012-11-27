@@ -1,71 +1,58 @@
-var SCDirectorEntity = PlayerEntity.extend( {
+// A director controlled by the client
+var MainDirectorEntity = MainPlayerEntity.extend( {
 
-  init: function(x, y, settings) {
-
-    // Call the parent constructor (PlayerEntity)
-    this.parent(x, y, settings);
-
-    // Camera will follow this entity around
-    me.game.viewport.follow(this);
+  init: function(x, y, settings, attrs) {
+    this.parent(x, y, settings, attrs);
   },
 
-  // Automatically called by melonjs once per tick
-  update: function() {
+  performAbility: function() {
+    var minion = this.summon(MinionEntity, { minionType: MINIONTYPE.BASIC });
+    minion.setId();
 
-    keyboard_movement(this);
-
-    this.updateMovement();
-
-    // Standing animation if no movement detected
-    if (this.vel.y == 0 && this.vel.x == 0) {
-      this.animation = 'stand_' + this.direction;
-      this.setCurrentAnimation(this.animation);
-    } else {
-      this.animation = this.direction;
-      this.setCurrentAnimation(this.animation);
-      this.parent(this);
-    }
-    
-    // Record the player's current position to tell the server later
-    mainPlayerUpdates.positions.push( {
-      pos_x: this.pos.x,
-      pos_y: this.pos.y,
-      animation: this.animation
-    });
-
-    return true;
+    this.newActions.summonedMinions = [{ 
+      id: minion.id,
+      minionType: MINIONTYPE.BASIC,
+      name: minion.name,
+      posX: minion.pos.x,
+      posY: minion.pos.y
+    }];
+    game.minions[minion.id] = minion;
+    return 0;
   }
 });
 
-var OCDirectorEntity = PlayerEntity.extend( {
+// A director controlled by another client
+var OtherDirectorEntity = OtherPlayerEntity.extend( {
 
-  init: function(x, y, settings) {
-
-    this.parent(x, y, settings);
+  init: function(x, y, settings, attrs) {
+    this.parent(x, y, settings, attrs);
   },
 
-  // Automatically called by melonjs once per tick
   update: function() {
-
-    this.updateMovement();
-
-    // Standing animation if no movement detected
-    if (this.vel.y == 0 && this.vel.x == 0) {
-      this.animation = 'stand_' + this.direction;
-      this.setCurrentAnimation(this.animation);
-    } else {
-      this.animation = this.direction;
-      this.setCurrentAnimation(this.animation);
-      this.parent(this);
+    var updateItem = this.updates.shift();
+    if (typeof updateItem !== 'undefined') {
+      this.critUpdate(updateItem);
     }
-    
-    // Record the player's current position to tell the server later
-    mainPlayerUpdates.positions.push( {
-      pos_x: this.pos.x,
-      pos_y: this.pos.y,
-      animation: this.animation
-    });
 
+    this.parent(updateItem);
     return true;
+  },
+
+  critUpdate: function(updateItem) {
+    if (typeof updateItem !== 'undefined') {
+
+      if (typeof updateItem.summonedMinions !== 'undefined') {
+        var minion = updateItem.summonedMinions[0];
+        logger(this.name + ' summoned a minion at ' + minion.posX + ', ' + minion.posY, 2);
+        minion = this.summon(MinionEntity, { 
+          id: minion.id, 
+          minionType: MINIONTYPE.BASIC,
+          posX: minion.posX, 
+          posY: minion.posY
+        });
+        game.minions[minion.id] = minion;
+      }
+    }
+    this.parent(updateItem);
   }
 });

@@ -4,9 +4,9 @@ var assets = [
   * Sprites
   */
   {
-    name: 'playerA',
+    name: 'playerMock',
     type:'image',	
-    src: 'assets/sprites/playerA.png'
+    src: 'assets/sprites/playerMock.png'
   },
 
   {
@@ -15,22 +15,40 @@ var assets = [
     src: 'assets/sprites/assaultMock.png'
   },
 
-    {
+  {
     name: 'heavyMock',
     type:'image',	
     src: 'assets/sprites/heavyMock.png'
   },
 
-    {
+  {
     name: 'supportMock',
     type:'image',	
     src: 'assets/sprites/supportMock.png'
   },
 
-    {
+  {
     name: 'directorMock',
     type:'image',	
     src: 'assets/sprites/directorMock.png'
+  },
+
+  {
+    name: 'bullet',
+    type:'image',	
+    src: 'assets/sprites/bullet.png'
+  },
+
+  {
+    name: 'enemyMock',
+    type: 'image',	
+    src: 'assets/sprites/enemyMock.png'
+  },
+
+  {
+    name: 'ammoBox',
+    type: 'image',
+    src: 'assets/sprites/ammo_box.png'
   },
 
   /*

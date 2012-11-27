@@ -4,9 +4,9 @@ LobbyScreen = me.ScreenObject.extend( {
   },
 
   onResetEvent: function() {
-    me.game.add(new me.ColorLayer('lightBlue', '#48b5b3', 1));
+    me.game.add(new me.ColorLayer('purple', '#ab6cff', 1));
     this.lobbySeparator = generateSeparator(me.video.getWidth() / 9);
-    this.countdown = 3.95;
+    this.countdown = GAMECFG.countdownTime + 0.95;
     this.xCenter = me.video.getWidth() / 2;
 
     // init/re-init player
@@ -28,7 +28,7 @@ LobbyScreen = me.ScreenObject.extend( {
         image: CHARCLASSES[i].sprite,
         spritewidth: 32,
         spriteheight: 48
-      }); 
+      }, { charclass: i }); 
       me.game.add(this.sampleSprites[i], 2);
       this.sampleSprites[i].resize(1.5);
     }
@@ -48,14 +48,14 @@ LobbyScreen = me.ScreenObject.extend( {
   },
 
   update: function() {
-    if (mainPlayerId == undefined && this.serverConnId == undefined) {
+    if (typeof mainPlayerId === 'undefined' && typeof this.serverConnId === 'undefined') {
       logger('Need to re-request game state from server', 1);
       this.serverConnId = setInterval(reestablishServerConn, 2000); 
     } else if (mainPlayerId) {
       if (this.serverConnId) {
         clearInterval(this.serverConnId);
       }
-      if (parseInt(this.countdown) <= 0) {
+      if (parseInt(this.countdown, 10) <= 0) {
         // A game is ready to start so switch to the play screen
         me.state.change(me.state.PLAY);
       } else {
@@ -68,17 +68,17 @@ LobbyScreen = me.ScreenObject.extend( {
             if (player.charclass < 0) {
               player.charclass = CHARCLASSES.length - 1;
             }
-            socket.emit('this client changes their class', player.charclass)
+            socket.emit('this client changes their class', player.charclass);
           } else if (me.input.isKeyPressed('right')) {
             player.charclass++;
             if (player.charclass > CHARCLASSES.length - 1) {
               player.charclass = 0;
             }
-            socket.emit('this client changes their class', player.charclass)
+            socket.emit('this client changes their class', player.charclass);
           }
 
           if (me.input.isKeyPressed('enter')) {
-            if (game.currentState == 0) {
+            if (game.currentState === 0) {
               socket.emit('this client is ready to play');
             } else if (game.currentState == 1) {
               // A game is already in progress so switch straight to the play screen
@@ -89,12 +89,13 @@ LobbyScreen = me.ScreenObject.extend( {
         }
       }
     }
-
+    
+    this.parent(this);
     return true;
   },
 
   draw: function(context) {
-    if (mainPlayerId == undefined) {
+    if (typeof mainPlayerId === 'undefined') {
       context.font = 'bold 25px Oswald';
       context.textAlign = 'center';
       context.fillText(context, 'Establishing connection with game server...', this.xCenter, 200);
@@ -106,7 +107,7 @@ LobbyScreen = me.ScreenObject.extend( {
       */
       context.font = 'bold 40px Jolly Lodger';
       context.textAlign = 'center';
-      context.fillStyle = 'blue';
+      context.fillStyle = '#301b4c';
       context.fillText('SURVIVE THE NIGHT', this.xCenter, yPos);
 
       /*
@@ -116,7 +117,7 @@ LobbyScreen = me.ScreenObject.extend( {
       yPos += 120;
       for (var i=0; i < CHARCLASSES.length; i++) {
         // Draw director further right than the other classes
-        if (i == CHARCLASSES.length - 1) {
+        if (i == CHARCLASS.DIRECTOR) {
           classXPos = classXPos + 100;
         } 
         // Position sample sprite
@@ -142,7 +143,7 @@ LobbyScreen = me.ScreenObject.extend( {
         var attrYPos = yPos + 50;
         // Pros
         for (var j=0; j < CHARCLASSES[i].pros.length; j++) {
-          context.fillStyle = 'green';
+          context.fillStyle = '#296d0a';
           context.fillText('+ ' + CHARCLASSES[i].pros[j], classXPos, attrYPos);
           attrYPos += 15;
         }
@@ -161,11 +162,11 @@ LobbyScreen = me.ScreenObject.extend( {
       context.fillStyle = 'black';
       context.font = 'bold 18px Droid Sans';
       yPos += 100;
-      if (game.currentState == 0) {
+      if (game.currentState === 0) {
         // For when a game hasn't started yet and everyone is in the lobby
         if (lobby.allReady) {
-          context.fillText('Starting game in: ' + parseInt(this.countdown), this.xCenter, yPos);
-          this.countdown -= .05;
+          context.fillText('Starting game in: ' + parseInt(this.countdown, 10), this.xCenter, yPos);
+          this.countdown -= 0.05;
         } else if (lobby.players[mainPlayerId].isReady) {
           context.fillText('Please wait semi-patiently until all players are ready', this.xCenter, yPos);
         } else {
@@ -196,24 +197,24 @@ LobbyScreen = me.ScreenObject.extend( {
       yPos += 30;
       context.font = '16px Droid Sans';
       context.fillStyle = 'black';
-      for (key in lobby.players) {
-        var player = lobby.players[key];
+      for (var playerId in lobby.players) {
+        var player = lobby.players[playerId];
         var displayText = player.name + ' - ' + CHARCLASSES[player.charclass].name;
         // Append additional message if player is ready or in the game
         if (player.isReady) {
-          if (game.currentState == 0) {
+          if (game.currentState === 0) {
             displayText += ' - ' + 'READY';
           } else if (game.currentState == 1) {
             displayText += ' - ' + 'IN GAME';
           }
-        } else if (game.currentState == 0) {
+        } else if (game.currentState === 0) {
           displayText += ' - ' + 'IN LOBBY';
         }
         // Purple text for main player, black for everyone else
-        if (key == mainPlayerId) {
+        if (playerId == mainPlayerId) {
           context.fillStyle = 'purple';
         } else {
-          context.fillStyle = 'black';
+          context.fillStyle = 'blue';
         }
         context.fillText(displayText, this.xCenter, yPos);
         yPos += 20;

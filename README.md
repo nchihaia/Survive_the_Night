@@ -1,7 +1,7 @@
 Survive the Night
 =================
 
-**Link to game based on latest revision:** http://survivethenight.herokuapp.com/
+**Link to game based on latest revision:** http://stn.herokuapp.com/
 
 **melonJS tutorial:** http://www.melonjs.org/tutorial/
 

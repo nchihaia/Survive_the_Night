@@ -1,76 +1,91 @@
-// The character directly controlled by the client
-var MainSurvivorEntity = PlayerEntity.extend( {
+// A survivor controlled by the client
+var MainSurvivorEntity = MainPlayerEntity.extend( {
 
-  init: function(x, y, settings) {
-
-    // Call the parent constructor (PlayerEntity)
-    this.parent(x, y, settings);
-
-    // Camera will follow this entity around
-    me.game.viewport.follow(this);
+  init: function(x, y, settings, attrs) {
+    this.parent(x, y, settings, attrs);
   },
 
-  // Automatically called by melonjs once per tick
   update: function() {
-
-    // Remember previous actions so we can check whether or not
-    // player has performed a new action
-    var prev_xpos = this.pos.x;
-    var prev_ypos = this.pos.y;
-    var prev_animation = this.animation;
-
-    keyboard_movement(this);
-
-    this.updateMovement();
-
-    // Standing animation if no movement detected
-    if (this.vel.y == 0 && this.vel.x == 0) {
-      this.animation = 'stand_' + this.direction;
-      this.setCurrentAnimation(this.animation);
-    } else {
-      this.animation = this.direction;
-      this.setCurrentAnimation(this.animation);
-      this.parent(this);
+    var entRes = me.game.collide(this);
+    if (entRes && entRes.obj.entType == ENTTYPES.ENEMY) {
+      var enemy = entRes.obj;
+      if (enemy.isMinion) {
+        var damage = enemy.attemptAbility(this, { damage: enemy.damage });
+        if (typeof damage === 'number') {
+          me.game.HUD.updateItemValue('charItem');
+          this.newActions.wasAttacked = this.newActions.wasAttacked || [];
+          this.newActions.wasAttacked.push({
+            damage: damage,
+            attackerId: enemy.id
+          });
+        }
+      }
     }
 
-    // Record the player's current position to tell the server later if
-    // an action was detected in this tick
-    if (prev_xpos != this.pos.x || prev_ypos != this.pos.y || prev_animation != this.animation) {
-      clientUpdates.positions.push( {
-        pos_x: this.pos.x,
-        pos_y: this.pos.y,
-        animation: this.animation
-      });
-    } else {
-      logger('No new action detected on this tick', 4);
-    }
-
+    this.parent();
     return true;
+  },
+
+  performAbility: function() {
+    this.shoot(BulletProjectile);
+    this.newActions.shotWeapon = true;
+    return 0;
+  },
+
+  performAttack: function(entity, attack) {
+    var damage = this.parent(entity, attack);
+    this.newActions.attackHits = this.newActions.attackHits || [];
+    this.newActions.attackHits.push({ 
+      damage: damage,
+      entityId: entity.id
+    });
+    return damage;
   }
 });
 
-// Teammates of the main player
-var OtherSurvivorEntity = PlayerEntity.extend( {
+// A survivor controlled by another client
+var OtherSurvivorEntity = OtherPlayerEntity.extend( {
 
-  init: function(x, y, settings) {
-    // Call the parent constructor (PlayerEntity)
-    this.parent(x, y, settings);
-    this.diff_x = 0
-    this.diff_y = 0
+  init: function(x, y, settings, attrs) {
+    this.parent(x, y, settings, attrs);
   },
 
   update: function() {
-    server_movement(this);
-    this.parent(this);
+    // Pop an item off the survivor's update stack and
+    // figure out the survivor's actions based on the data given
+    var updateItem = this.updates.shift();
+    if (typeof updateItem !== 'undefined') {
 
+      if (typeof updateItem.shotWeapon !== 'undefined') {
+        this.shoot(BulletProjectile);
+      }
+      this.critUpdate(updateItem);
+    }
+    this.parent(updateItem);
     return true;
   },
 
-  draw: function(context) {
-    this.parent(context);
-    context.font = '10px Droid Sans';
-    context.textAlign = 'center';
-    context.fillStyle = 'black';
-    context.fillText(this.currHp + ' / ' + this.maxHp, this.left + 15, this.top);
+  critUpdate: function(updateItem) {
+    if (typeof updateItem !== 'undefined') {
+
+      // This player attacked an enemy
+      if (typeof updateItem.attackHits !== 'undefined') {
+        for (var i=0; i < updateItem.attackHits.length; i++) {
+          var attackEnemy = updateItem.attackHits[i];
+          var target = findEntityById(attackEnemy.entityId);
+          this.performAttack(target, attackEnemy);
+        }
+      }
+
+      // This player was attacked by an enemy
+      if (typeof updateItem.wasAttacked !== 'undefined') {
+        for (var j=0; j < updateItem.wasAttacked.length; j++) {
+          var attackByEnemy = updateItem.wasAttacked[j];
+          var enemy = findEntityById(attackByEnemy.attackerId);
+          enemy.performAttack(this, attackByEnemy);
+        }
+      }
+    }
+    this.parent(updateItem);
   }
 });

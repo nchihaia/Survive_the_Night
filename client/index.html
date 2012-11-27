@@ -4,7 +4,7 @@
     <title>Survive the Night</title>
     <link href='webfonts.css' rel='stylesheet' type='text/css'>
   </head>
-  <body style="background-color: #000;">
+  <body style="background-color: #402466;">
     <center>
       <div id="fps">
         <font color="#FFFFFF" style="font-size: 10px;">
@@ -14,21 +14,34 @@
       <div id="jsapp">
         <script type="text/javascript" src="/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="lib/melonJS-0.9.5.js"></script>
-
+        
+        <script type="text/javascript" src="config.js"></script>
+        <script type="text/javascript" src="helpers.js"></script>
+        <script type="text/javascript" src="entity_types.js"></script>
         <script type="text/javascript" src="charclasses.js"></script>
+        <script type="text/javascript" src="minions.js"></script>
         
         <script type="text/javascript" src="game/main.js"></script>
         <script type="text/javascript" src="game/assets.js"></script>
 
+        <script type="text/javascript" src="game/ui/time.js"></script>
+        <script type="text/javascript" src="game/ui/char.js"></script>
+        
+        <script type="text/javascript" src="game/entities/entity.js"></script>
         <script type="text/javascript" src="game/entities/players/player.js"></script>
         <script type="text/javascript" src="game/entities/players/survivor.js"></script>
-        <script type="text/javascript" src="game/entities/players/shared_functions.js"></script>
+        <script type="text/javascript" src="game/entities/players/director.js"></script>
+        <script type="text/javascript" src="game/entities/minions/minion.js"></script>
+
+        <script type="text/javascript" src="game/projectiles/bullet.js"></script>
+
+        <script type="text/javascript" src="game/collectibles/ammo.js"></script>
 
         <script type="text/javascript" src="game/screens/play.js"></script>
         <script type="text/javascript" src="game/screens/lobby.js"></script>
         
         <script type="text/javascript" src="game/game_client/game_client.js"></script>
-        <script type="text/javascript" src="game/game_client/interval.js"></script>
+        <script type="text/javascript" src="game/game_client/intervals.js"></script>
         <script type="text/javascript" src="game/game_client/listeners.js"></script>
       </div>
     </center>

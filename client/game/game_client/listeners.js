@@ -3,7 +3,7 @@
  */
 
 socket.on('server sends lobby state', function(data) {
-  logger('receiving lobby state from server', 1);
+  logger('Receiving lobby state from server', 1);
   mainPlayerId = data.mainPlayerId;
   game.currentState = data.currentState;
   lobby = data.lobby;
@@ -22,8 +22,11 @@ socket.on('a client changes their class', function(data) {
 });
 
 socket.on('a client is ready to play', function(id) {
-  logger(lobby.players[id].name + ' is ready to play', 1);
-  lobby.players[id].isReady = true;
+  // Don't do anything if player hasn't received lobby state yet
+  if (typeof mainPlayerId !== 'undefined') {
+    logger(lobby.players[id].name + ' is ready to play', 1);
+    lobby.players[id].isReady = true;
+  }
 });
 
 socket.on('server tells all clients to start game', function() {
@@ -37,17 +40,36 @@ socket.on('server tells all clients to start game', function() {
 
 socket.on('server sending game state', function(serverGame) {
   logger('Server sends game state', 1);
-  for (key in serverGame.players) {
-    var player = serverGame.players[key];
-    addPlayer(key, player.name, player.charclass);
-  } 
+  // Add players
+  for (var playerId in serverGame.players) {
+    if (playerId != mainPlayerId) {
+      addPlayer(serverGame.players[playerId]);
+    }
+  }
+  // Add Minions
+  for (var minionId in serverGame.minions) {
+    addMinion(serverGame.minions[minionId]);
+  }
+  // Set time
+  game.time.rawVal = serverGame.time;
 });
 
-socket.on('server sends updates', function(gameUpdates) {
+socket.on('server sends updates', function(update) {
   logger('Server sends update packet', 4);
   if (inCurrentGame()) {
-    for (key in gameUpdates.playerUpdates) {
-      updatePlayer(key, gameUpdates.playerUpdates[key]);
+    for (var playerId in update.gameUpdates.playerUpdates) {
+      updatePlayer(playerId, update.gameUpdates.playerUpdates[playerId]);
+    }
+    // Check for any lost update packets
+    if (typeof game.updateNum !== 'undefined') {
+      if (game.updateNum + 1 !== update.updateNum) {
+        var numPacketsLost = update.updateNum - game.updateNum + 1; 
+        logger('Lost ' + numPacketsLost + ' update packets', 3);
+        game.numPacketsLost += numPacketsLost;
+        // TODO: Re-request game state if number of lost update packets is over
+        // a certain threshold
+      }
+      game.updateNum = update.updateNum;
     }
   }
 });
@@ -56,7 +78,7 @@ socket.on('a new player joins the game', function(player) {
   logger(player.name + ' joins the game', 1);
   // This message is only relevant to players already in the game
   if (game.currentState == 1 && lobby.players[mainPlayerId].isReady) {
-    addPlayer(player.id, player.name, player.charclass); 
+    addPlayer(player); 
   }
 });
 
@@ -73,9 +95,20 @@ socket.on('a client exits the current game to lobby', function(id) {
 
 socket.on('server broadcasts that game is back to lobby state', function() {
   logger('All players are now in the lobby', 1);
-  game = initGame();
   lobby.allReady = false;
   me.state.change(me.state.LOBBY);
+  game = initGame();
+});
+
+socket.on('a player leveled up', function(data) {
+  var player = game.players[data.id];
+  if (typeof player !== 'undefined') {
+    player.level = data.level;
+    logger(player.name + ' is now level ' + data.level, 2); 
+    if (data.id == mainPlayerId) {
+      me.game.HUD.updateItemValue('charItem');
+    }
+  }
 });
 
 /*
@@ -83,7 +116,7 @@ socket.on('server broadcasts that game is back to lobby state', function() {
  */
 
 socket.on('a player left the game', function(id) {
-  var playerName = undefined;
+  var playerName;
   if (game.players[id]) {
     playerName = game.players[id].name;
     me.game.remove(game.players[id]);
@@ -107,7 +140,7 @@ socket.on('a player left the game', function(id) {
  */
 
 function addToLobby(id, name) {
-  lobby.players[id] = { 
+  lobby.players[id] = {
     id: id,
     name: name,
     charclass: 0,
@@ -119,38 +152,36 @@ function addToLobby(id, name) {
  * Game helpers
  */
 
-function addPlayer(id, name, charclass) {
-  // Create a new instance of the entity representing the teammate
-  var player = new OtherSurvivorEntity(100, 100, {
-    image: CHARCLASSES[charclass].sprite,
-    spritewidth: 32,
-    spriteheight: 48
-  });
-  
-  player.serverId = id;
-  player.name = name;
-  player.updates = { positions: [] };
+function addPlayer(serverPlayer) {
+  var attrs = {};
+  customMerge(attrs, serverPlayer, GAMECFG.playerFields);
 
-  // Class-based attributes
-  player.charclass = charclass;
-  player.maxHp = CHARCLASSES[charclass].baseHp;
-  player.currHp = player.maxHp;
-
-  // Decide the max number of update items to keep and the margin (cutoff point)
-  // that maxUpdatesToKeep has to go over before we trim the number of updates 
-  // down to equal maxUpdatesToKeep.
-  // Higher values => less stuttering, more delay
-  // Lower values => less delay, possibly more stuttering
-  player.updatesMargin = 1;
-  player.maxUpdatesToKeep = parseInt(player.updatesMargin / 6);
-
-  game.players[id] = player;
+  // Create a new instance of the entity representing the player
+  var player;
+  var xPos = GAMECFG.survivorStartingXPos;
+  var yPos = GAMECFG.survivorStartingYPos;
+  if (attrs.charclass == CHARCLASS.DIRECTOR) {
+    player = new OtherDirectorEntity(xPos, yPos, {}, attrs);
+  } else {
+    player = new OtherSurvivorEntity(xPos, yPos, {}, attrs);
+  }
+  game.players[attrs.id] = player;
   
   // Add the player into the game world
-  if (id != mainPlayerId) {
-    me.game.add(player, 2);
-    me.game.sort();
-  }
+  me.game.add(player, 2);
+  me.game.sort();
+}
+
+function addMinion(serverMinion) {
+  var attrs = {};
+  customMerge(attrs, serverMinion, GAMECFG.minionFields);
+  var producer = game.players[serverMinion.producerId];
+  var minion = new MinionEntity(producer, attrs);
+  game.minions[minion.id] = minion;
+
+  // Add minion to game
+  me.game.add(minion, 2);
+  me.game.sort();
 }
 
 function inCurrentGame() {
@@ -161,21 +192,32 @@ function inCurrentGame() {
 // a player controlled by another client
 function updatePlayer(id, updates) {
   var player = game.players[id];
+  // Don't need to update main player
   if (id != mainPlayerId && player) {
-    positions = player.updates.positions; 
-    player.updates.positions = positions.concat(updates.positions);
-
+    player.updates = player.updates.concat(updates);
     // Decide if we need to skip some frames if there are too much
     // update items queued up
-    if (positions.length > player.maxUpdatesToKeep) {
-      sliceStart = positions.length - player.maxUpdatesToKeep;
-      if (sliceStart > player.updatesMargin) {
-        sliceEnd = positions.length - 1;
-        player.updates.positions = positions.slice(sliceStart, sliceEnd);
+    if (player.updates.length > player.maxUpdatesToKeep) {
+      var sliceStart = player.updates.length - player.maxUpdatesToKeep;
+      // If size of updates list exceeds the margin
+      if (GAMECFG.trimUpdates && sliceStart > player.updatesMargin) {
+        // Slice updates into two
+        var beforeSlice = player.updates.slice(0, sliceStart);
+        var afterSlice = player.updates.slice(sliceStart);
+
+        // Of the update frames to skip, figure out if there are
+        // any critical updates that need to be handled (like player health),
+        // as opposed to a noncritical update (player position)
+        for (var index in beforeSlice) {
+          player.critUpdate(beforeSlice[index]);
+        }
+
+        player.updates = afterSlice;
         logger(player.name + ': skipped ' + sliceStart + ' frames', 3);
+
         // Increase margin if client keeps on skipping update items
         player.updatesMargin++;
-        player.maxUpdatesToKeep = parseInt(player.updatesMargin / 6);
+        player.maxUpdatesToKeep = parseInt(player.updatesMargin / GAMECFG.marginMaxUpdatesRatio, 10);
         logger(player.name + ': margin is ' + player.updatesMargin + ', max frames is ' + player.maxUpdatesToKeep, 3);
       }
     }

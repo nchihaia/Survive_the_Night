@@ -7,7 +7,11 @@ var surviveTheNight = {
     // webpage out of focus/minimized/on another tab
     me.sys.pauseOnBlur = false;
     // 30fps limit
-    me.sys.fps = 30;
+    me.sys.fps = GAMECFG.fps;
+    // Gravity off
+    me.sys.gravity = 0;
+    // Enable frame interpolation
+    // me.sys.interpolation = true;
 
     // Create the game screen, warning player if browser isn't compatible 
     if (!me.video.init('jsapp', 960, 540, true)) {
@@ -28,17 +32,11 @@ var surviveTheNight = {
     me.state.set(me.state.PLAY, new PlayScreen());
     me.state.set(me.state.LOBBY, new LobbyScreen());
 
-    // Add each entity ONCE into the entity pool.  Even if there
-    // are 4 bots, if they are defined by the same entity, the entity 
-    // should only be added once to the entity pool
-    me.entityPool.add('MainSurvivorEntity', MainSurvivorEntity);
-    me.entityPool.add('OtherSurvivorEntity', OtherSurvivorEntity);
-
     // First screen client sees is the play screen
     me.state.change(me.state.LOBBY);
 
     // Tell the server we joined the lobby
-    var mainName = prompt("Type your player's name:", Math.random().toString(36).substr(2, 4));
+    var mainName = prompt("Type your player's name:", randomString(4));
     socket.emit('this client first joins the lobby', mainName);
   }
 };

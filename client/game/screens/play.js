@@ -1,10 +1,5 @@
 var PlayScreen = me.ScreenObject.extend( {
 
-  // Init only required if we need to call update function
-  init: function() {
-    this.parent(true);
-  },
-
   onResetEvent: function() {	
     // Bind needed keys
     me.input.bindKey(me.input.KEY.ENTER, 'enter', true);
@@ -13,25 +8,56 @@ var PlayScreen = me.ScreenObject.extend( {
     me.input.bindKey(me.input.KEY.RIGHT, 'right');
     me.input.bindKey(me.input.KEY.UP,	'up');
     me.input.bindKey(me.input.KEY.DOWN,	'down');
+    me.input.bindKey(me.input.KEY.SHIFT,	'shift');
+    me.input.bindKey(me.input.KEY.D, 'action');
 
     // Load the default level.  These levels are defined in assets.js
     me.levelDirector.loadLevel('map_01');
 
-    socket.emit('this client is in the game');
-    game.currentState = 1;
+    // Add a HUD (whole screen coverage)
+    me.game.addHUD(0, 0, me.video.getWidth(), me.video.getHeight());
 
-    this.mainPlayerEntity = new MainSurvivorEntity(200, 200, {
-      image: CHARCLASSES[lobby.players[mainPlayerId].charclass].sprite,
-      spritewidth: 32,
-      spriteheight: 48
-    });
-    me.game.add(this.mainPlayerEntity, 2);
+    // Time UI
+    game.time = new TimeItem();
+    me.game.HUD.addItem('timeItem', game.time);
+
+    // Character UI
+    game.charDisplay = new CharItem();
+    me.game.HUD.addItem('charItem', game.charDisplay);
+
+    // Intervals
+    var timeIntervalRate = 10000 / GAMECFG.gameMinutesPerSecond;
+    this.incrementTimeId = setInterval(incrementTime, timeIntervalRate);
+    this.sendUpdateId = setInterval(sendUpdate, 1000 / GAMECFG.clientUpdatesPerSecond);
 
     // day night overlay
     this.lightOverlay = new me.ColorLayer('lightOverlay', '#0d0954', 5);
-    this.lightOverlay.increment = 0.001;
-    this.lightOverlay.opacity = 0.001;
+    this.lightOverlay.opacity = 0;
     me.game.add(this.lightOverlay, 5);
+    this.tweenStep = (GAMECFG.maxLightOpacity - GAMECFG.minLightOpacity) / 12;
+
+    // Add the player the client controls to the game
+    var charclass = lobby.players[mainPlayerId].charclass;
+    var attrs = { 
+      id: mainPlayerId,
+      name: lobby.players[mainPlayerId].name,
+      level: CHARCLASSES[charclass].baseLevel,
+      charclass: charclass
+    };
+    var xPos = GAMECFG.survivorStartingXPos;
+    var yPos = GAMECFG.survivorStartingXPos;
+    if (charclass == CHARCLASS.DIRECTOR) {
+      game.players[mainPlayerId] = new MainDirectorEntity(xPos, yPos, {}, attrs);
+    } else {
+      game.players[mainPlayerId] = new MainSurvivorEntity(xPos, yPos, {}, attrs);
+    }
+    me.game.add(game.players[mainPlayerId], 2);
+    me.game.sort();
+
+    this.lightTween();
+
+    game.currentState = 1;
+    socket.emit('this client is in the game');
   },
 
   onDestroyEvent: function() {
@@ -41,17 +67,70 @@ var PlayScreen = me.ScreenObject.extend( {
     me.input.unbindKey(me.input.KEY.RIGHT);
     me.input.unbindKey(me.input.KEY.UP);
     me.input.unbindKey(me.input.KEY.DOWN);
+    me.input.unbindKey(me.input.KEY.SHIFT);
+    me.input.unbindKey(me.input.KEY.D);
 
-    me.game.remove(this.mainPlayerEntity);
-    me.game.remove(this.lightOverlay);
+    clearInterval(this.incrementTimeId);
+    clearInterval(this.sendUpdateId);
+    
+    if (typeof this.lightOverlay !== 'undefined') {
+      me.game.remove(this.lightOverlay);
+    }
+
+    if (typeof game.players[mainPlayerId] !== 'undefined') {
+      me.game.remove(game.players[mainPlayerId]);
+    }
+    
+    if (typeof game.time !== 'undefined') {
+      me.game.HUD.removeItem('timeItem');
+    }
+
+    if (typeof game.charItem !== 'undefined') {
+      me.game.HUD.removeItem('charItem');
+    }
   },
 
-  update: function() {
-    if (this.lightOverlay.opacity >= 0.75) {
-      this.lightOverlay.increment = -0.001;
-    } else if (this.lightOverlay.opacity <= 0.001) {
-      this.lightOverlay.increment = 0.001;
+  lightTween: function() {
+    var hour = game.time.getHour();
+    // Min opacity at tweenMul = 0.  Max opacity at tweenMul = 12
+    var tweenMul = 0;
+    var lastHour = 0;
+    
+    if (hour >= 0 && hour < 6) {
+      // From midnight to 6AM
+      lastHourToTween = 5;
+      tweenMul = 8; 
+    } else if (hour == 6) {
+      // From 6AM to 7AM
+      lastHourToTween = 6;
+      tweenMul = 4;
+    } else if (hour >= 7 && hour < 12) {
+      // From 7AM to noon
+      lastHourToTween = 11;
+      tweenMul = 0; 
+    } else if (hour >= 12 && hour < 17) {
+      // From noon to 5PM
+      lastHourToTween = 16;
+      tweenMul = 3; 
+    } else if (hour == 17) {
+      // From 5PM to 6PM
+      lastHourToTween = 17;
+      tweenMul = 8; 
+    } else if (hour >= 18 && hour < 24) {
+      // From 6PM to midnight 
+      lastHourToTween = 24;
+      tweenMul = 12; 
     }
-    this.lightOverlay.opacity += this.lightOverlay.increment;
+
+    var tweenTo = GAMECFG.minLightOpacity + (tweenMul * this.tweenStep);
+    var msToTween = (lastHourToTween - hour + 1) * (60000 / GAMECFG.gameMinutesPerSecond);
+
+    var tween = new me.Tween(this.lightOverlay)
+    .to({ opacity: tweenTo }, msToTween)
+    .onComplete(function() {  
+      me.state.current().lightTween();
+    }).start();
   }
 });
+
+
