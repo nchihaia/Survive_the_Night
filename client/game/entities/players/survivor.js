@@ -82,10 +82,12 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
         for (var j=0; j < updateItem.wasAttacked.length; j++) {
           var attackByEnemy = updateItem.wasAttacked[j];
           var enemy = findEntityById(attackByEnemy.attackerId);
-          enemy.performAttack(this, attackByEnemy);
+          if (enemy !== 'undefined') {
+            enemy.performAttack(this, attackByEnemy);
         }
       }
     }
-    this.parent(updateItem);
   }
+  this.parent(updateItem);
+}
 });

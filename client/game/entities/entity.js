@@ -70,7 +70,7 @@ var Entity = me.ObjectEntity.extend( {
   },
 
   calcDamage: function(target, attack) {
-    if (target.alive) {
+    if (typeof target !== 'undefined' && target.alive) {
       return attack.damage;
     } else {
       return 0;
