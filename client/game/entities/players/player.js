@@ -18,14 +18,22 @@ var PlayerEntity = Entity.extend( {
     this.setVelocity(5, 5);
     this.setFriction(0.7, 0.7);
     this.collidable = true;
-
-    // Set attributes
+    
+    // Merge attrs fields into this entity
     customMerge(this, attrs, GAMECFG.playerFields); 
+
     this.entType = CHARCLASSES[this.charclass].entType;
-    this.maxHp = this.maxHp || CHARCLASSES[this.charclass].baseHp;
-    this.currHp = this.maxHp;
     this.actionCooldownTime = CHARCLASSES[this.charclass].actionCooldownTime;
     this.ammoCount = CHARCLASSES[this.charclass].startingAmmoAmount;
+
+    // Set Hp.  This value could come from some attribute set on the server side or
+    // a default value from the config if no value is passed through attrs
+    if (typeof this.maxHp === 'undefined') {
+        this.maxHp = CHARCLASSES[this.charclass].baseHp;
+    }
+    if (typeof this.currHp === 'undefined') {
+      this.currHp = this.maxHp;
+    }
 
     // Decide the max number of update items to keep and the margin (cutoff point)
     // that maxUpdatesToKeep has to go over before we trim the number of updates 
@@ -145,7 +153,9 @@ var OtherPlayerEntity = PlayerEntity.extend( {
       y: this.pos.y
     };
   },
-
+  
+  // Adjust the velocity if the player's position in this client's
+  // view is too different from the real player's position
   adjustVel: function(updateItem, dir, animations) {
     var diff = this.pos[dir] - this.posShouldBe[dir];
     if (Math.abs(diff) > GAMECFG.posMargin) {

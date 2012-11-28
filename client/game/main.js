@@ -45,3 +45,12 @@ var surviveTheNight = {
 window.onReady(function() {
   surviveTheNight.onload();
 });
+
+// If the user exists the page, tell the server that they have disconnected
+// This isn't triggered when the client refreshes the page though (would need to
+// uncomment the return).
+window.onbeforeunload = function() {
+  socket.emit('this client leaves the game');
+  // Hide dialog box if there is no return
+  // return true;
+};

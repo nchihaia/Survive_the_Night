@@ -15,17 +15,18 @@ socket.on('a new player joins the lobby', function(data) {
 });
 
 socket.on('a client changes their class', function(data) {
-  if (lobby.players[data.id]) {
-    logger(lobby.players[data.id].name + ' changes their class', 4);
-    lobby.players[data.id].charclass = data.charclass;
+  var player = lobby.players[data.id];
+  if (typeof player !== 'undefined') {
+    logger(player.name + ' changes their class', 4);
+    player.charclass = data.charclass;
   }
 });
 
 socket.on('a client is ready to play', function(id) {
-  // Don't do anything if player hasn't received lobby state yet
-  if (typeof mainPlayerId !== 'undefined') {
-    logger(lobby.players[id].name + ' is ready to play', 1);
-    lobby.players[id].isReady = true;
+  var player = lobby.players[id];
+  if (typeof player !== 'undefined') {
+    logger(player.name + ' is ready to play', 1);
+    player.isReady = true;
   }
 });
 
@@ -34,24 +35,50 @@ socket.on('server tells all clients to start game', function() {
   lobby.allReady = true;
 });
 
+socket.on('a new game will be starting soon', function() {
+  logger('Game starting soon', 1);
+  lobby.nobodyReady = false;
+  setTimeout(function() {
+    lobby.allReady = true;
+  }, GAMECFG.timeBeforeGameStart * 1000);
+});
+
 /*
  * Game listeners
  */
 
+// This could happen either when this client first enters the game,
+// or is receiving a server resync
 socket.on('server sending game state', function(serverGame) {
   logger('Server sends game state', 1);
-  // Add players
-  for (var playerId in serverGame.players) {
-    if (playerId != mainPlayerId) {
-      addPlayer(serverGame.players[playerId]);
+  // Only matters if current player is in the game
+  if (lobby.players[mainPlayerId].isReady) {
+    // Add players
+    for (var playerId in serverGame.players) {
+      var serverPlayer = serverGame.players[playerId];
+      var player = game.players[playerId];
+      if (playerId != mainPlayerId && typeof player === 'undefined') {
+        // This client doesn't yet know about this player
+        addPlayer(serverPlayer);
+      } else if (typeof game.players[playerId] !== 'undefined') {
+        // Player already exists so sync with stats on the server side
+        syncPlayer(player, serverPlayer);
+      }
     }
+    // Add Minions
+    for (var minionId in serverGame.minions) {
+      // This client doesn't yet know about this minion
+      var serverMinion = serverGame.minions[minionId];
+      var minion = game.minions[minionId];
+      if (typeof minion === 'undefined') {
+        addMinion(serverGame.minions[minionId]);
+      } else {
+        syncMinion(minion, serverMinion);
+      }
+    }
+    // Set time
+    game.time.rawVal = serverGame.time;
   }
-  // Add Minions
-  for (var minionId in serverGame.minions) {
-    addMinion(serverGame.minions[minionId]);
-  }
-  // Set time
-  game.time.rawVal = serverGame.time;
 });
 
 socket.on('server sends updates', function(update) {
@@ -96,6 +123,7 @@ socket.on('a client exits the current game to lobby', function(id) {
 socket.on('server broadcasts that game is back to lobby state', function() {
   logger('All players are now in the lobby', 1);
   lobby.allReady = false;
+  lobby.nobodyReady = true;
   me.state.change(me.state.LOBBY);
   game = initGame();
 });
@@ -184,6 +212,14 @@ function addMinion(serverMinion) {
   me.game.sort();
 }
 
+function syncPlayer(player, serverPlayer) {
+  customMerge(player, serverPlayer, GAMECFG.playerFields);
+}
+
+function syncMinion(minion, serverMinion) {
+  minion.currHp = serverMinion.currHp;
+}
+
 function inCurrentGame() {
   return mainPlayerId && lobby.players[mainPlayerId].isReady && game.currentState == 1;
 }
@@ -193,7 +229,7 @@ function inCurrentGame() {
 function updatePlayer(id, updates) {
   var player = game.players[id];
   // Don't need to update main player
-  if (id != mainPlayerId && player) {
+  if (id != mainPlayerId && typeof player !== 'undefined') {
     player.updates = player.updates.concat(updates);
     // Decide if we need to skip some frames if there are too much
     // update items queued up

@@ -16,7 +16,8 @@ var game = initGame();
 
 var lobby = {
   players: {},
-  allReady: false
+  allReady: false,
+  nobodyReady: true
 };
 
 function initGame() {
@@ -32,10 +33,4 @@ function initGame() {
     players: {},
     minions: {}
   };
-}
-
-function logger(message, logLevel) {
-  if (gameLogLevel >= logLevel) {
-    console.log(message);
-  }
 }

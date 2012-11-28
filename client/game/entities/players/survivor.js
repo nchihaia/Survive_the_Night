@@ -73,7 +73,9 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
         for (var i=0; i < updateItem.attackHits.length; i++) {
           var attackEnemy = updateItem.attackHits[i];
           var target = findEntityById(attackEnemy.entityId);
-          this.performAttack(target, attackEnemy);
+          if (typeof target !== 'undefined') {
+            this.performAttack(target, attackEnemy);
+          }
         }
       }
 
@@ -82,12 +84,20 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
         for (var j=0; j < updateItem.wasAttacked.length; j++) {
           var attackByEnemy = updateItem.wasAttacked[j];
           var enemy = findEntityById(attackByEnemy.attackerId);
-          if (enemy !== 'undefined') {
+          if (typeof enemy !== 'undefined') {
             enemy.performAttack(this, attackByEnemy);
+          }
+        }
+      }
+
+      // This player gained health
+      if (typeof updateItem.hpIncreases !== 'undefined') {
+        for (var k=0; k < updateItem.hpIncreases.length; k++) {
+          var amount = updateItem.hpIncreases[k];
+          this.hpIncrease(amount);
         }
       }
     }
+    this.parent(updateItem);
   }
-  this.parent(updateItem);
-}
 });

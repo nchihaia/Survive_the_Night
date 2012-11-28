@@ -51,6 +51,12 @@ var assets = [
     src: 'assets/sprites/ammo_box.png'
   },
 
+  {
+    name: 'medkit',
+    type: 'image',
+    src: 'assets/sprites/medkit.png'
+  },
+
   /*
   * Tilesets 
   */

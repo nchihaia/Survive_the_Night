@@ -78,19 +78,23 @@ var Entity = me.ObjectEntity.extend( {
   },
 
   performAttack: function(entity, attack) {
-    var damage = this.calcDamage(entity, attack);
-    entity.currHp -= damage;
-    logger(this.name + ' hits ' + entity.name + ' for ' + damage + ' damage', 2);
+    if (typeof entity !== 'undefined') {
+      var damage = this.calcDamage(entity, attack);
+      entity.currHp -= damage;
+      logger(this.name + ' hits ' + entity.name + ' for ' + damage + ' damage', 2);
 
-    if (entity.currHp <= 0) {
-      if (entity.alive) {
-        entity.alive = false;
-        entity.flicker(20, function() {
-          delFromGame(entity);
-        });
+      if (entity.currHp <= 0) {
+        if (entity.alive) {
+          entity.alive = false;
+          entity.flicker(20, function() {
+            delFromGame(entity);
+          });
+        }
       }
+      return damage;
+    } else {
+      return false;
     }
-    return damage;
   },
 
   dropItem: function(item, pos) {
@@ -121,5 +125,14 @@ var Entity = me.ObjectEntity.extend( {
     } else {
       return false;
     }
+  },
+  
+  // Increase this entity's hp by 
+  hpIncrease: function(amount) {
+    var newHp = this.currHp + amount;
+    this.currHp = Math.min(newHp, this.maxHp);
+    me.game.HUD.updateItemValue('charItem');
+    this.newActions.hpIncreases = this.newActions.hpIncreases || [];
+    this.newActions.hpIncreases.push(amount);
   }
 });

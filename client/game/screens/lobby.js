@@ -4,6 +4,7 @@ LobbyScreen = me.ScreenObject.extend( {
   },
 
   onResetEvent: function() {
+    game = initGame();
     me.game.add(new me.ColorLayer('purple', '#ab6cff', 1));
     this.lobbySeparator = generateSeparator(me.video.getWidth() / 9);
     this.countdown = GAMECFG.countdownTime + 0.95;
@@ -55,12 +56,22 @@ LobbyScreen = me.ScreenObject.extend( {
       if (this.serverConnId) {
         clearInterval(this.serverConnId);
       }
-      if (parseInt(this.countdown, 10) <= 0) {
-        // A game is ready to start so switch to the play screen
-        me.state.change(me.state.PLAY);
-      } else {
-        var player = lobby.players[mainPlayerId];
+      var player = lobby.players[mainPlayerId];
 
+      if (parseInt(this.countdown, 10) <= 0) {
+        // If countdown reaches 0, the game has already started (for other players),
+        // whether or not this player is ready
+        if (game.currentState === 0) {
+          game.currentState = 1;
+        }
+        // Only switch to play screen if main player is ready
+        if (player.isReady) {
+          me.state.change(me.state.PLAY);
+        }
+      }
+      
+      // Only let a player change their class if they're not ready
+      if (!player.isReady) {
         // Left-right class choosing
         if (!player.isReady) {
           if (me.input.isKeyPressed('left')) {
@@ -162,20 +173,27 @@ LobbyScreen = me.ScreenObject.extend( {
       context.fillStyle = 'black';
       context.font = 'bold 18px Droid Sans';
       yPos += 100;
+      var text = 'Choose your class then press ENTER to ready up';
       if (game.currentState === 0) {
         // For when a game hasn't started yet and everyone is in the lobby
         if (lobby.allReady) {
-          context.fillText('Starting game in: ' + parseInt(this.countdown, 10), this.xCenter, yPos);
-          this.countdown -= 0.05;
+          text = 'Starting game in: ' + parseInt(this.countdown, 10);
+          // Decrement the countdown until it reaches 0
+          if (this.countdown >= 1) {
+            this.countdown -= 0.05;
+          }
         } else if (lobby.players[mainPlayerId].isReady) {
-          context.fillText('Please wait semi-patiently until all players are ready', this.xCenter, yPos);
+          text = 'Please wait semi-patiently until the game starts';
+        } else if (!lobby.nobodyReady) {
+          text = 'A game is starting soon so hurry up and choose a character';
         } else {
-          context.fillText('Choose your class then press ENTER to ready up', this.xCenter, yPos);
+          text = 'Choose your class then press ENTER to ready up';
         }
       } else if (game.currentState == 1) {
         // For when a game is in progress and the client is joining in
-        context.fillText('A game is in progress! Choose a class then press ENTER to join', this.xCenter, yPos);
+        text = 'A game is in progress! Choose a class then press ENTER to join';
       }
+      context.fillText(text, this.xCenter, yPos);
 
       /*
       * Players in lobby
@@ -204,7 +222,7 @@ LobbyScreen = me.ScreenObject.extend( {
         if (player.isReady) {
           if (game.currentState === 0) {
             displayText += ' - ' + 'READY';
-          } else if (game.currentState == 1) {
+          } else if (game.currentState === 1) {
             displayText += ' - ' + 'IN GAME';
           }
         } else if (game.currentState === 0) {

@@ -18,6 +18,11 @@ var MainDirectorEntity = MainPlayerEntity.extend( {
     }];
     game.minions[minion.id] = minion;
     return 0;
+  },
+
+  update: function() {
+    var entRes = me.game.collide(this);
+    this.parent(this);
   }
 });
 
