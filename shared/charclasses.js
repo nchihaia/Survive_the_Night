@@ -8,8 +8,8 @@ var CHARCLASS = {
 var CHARCLASSES = [ 
   {
     name: 'ASSAULT', 
-    descript: 'High damage combatant',
-    pros: ['high damage', 'fast'],
+    descript: 'Speedy combatant',
+    pros: ['fast-moving', 'fast attack speed'],
     cons: ['low health'],
     sprite: 'assaultMock',
     entType: 0,
@@ -22,8 +22,8 @@ var CHARCLASSES = [
   {
     name: 'HEAVY', 
     descript: 'Durable tank',
-    pros: ['lots of health'],
-    cons: ['slow'],
+    pros: ['lots of damage', 'lots of health'],
+    cons: ['slow-moving', 'slow attack speed'],
     sprite: 'heavyMock',
     entType: 0,
     baseLevel: 1,
@@ -35,8 +35,8 @@ var CHARCLASSES = [
   {
     name: 'SUPPORT', 
     descript: 'Versatile healer',
-    pros: ['heals nearby allies'],
-    cons: ['low health'],
+    pros: ['heals self and nearby allies', 'gets better loot'],
+    cons: ['low damage'],
     sprite: 'supportMock',
     entType: 0,
     baseLevel: 1,

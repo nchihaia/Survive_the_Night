@@ -89,13 +89,9 @@ LobbyScreen = me.ScreenObject.extend( {
           }
 
           if (me.input.isKeyPressed('enter')) {
-            if (game.currentState === 0) {
-              socket.emit('this client is ready to play');
-            } else if (game.currentState == 1) {
-              // A game is already in progress so switch straight to the play screen
-              me.state.change(me.state.PLAY);
-            }
-            lobby.players[mainPlayerId].isReady = true;
+            // Check to see if client can select this character 
+            // there can be (only one director for example)
+            socket.emit('this client chooses a charclass', player.charclass);
           }
         }
       }

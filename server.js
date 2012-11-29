@@ -87,27 +87,50 @@ io.sockets.on('connection', function(socket) {
     }
   });
 
+  socket.on('this client chooses a charclass', function(charclass) {
+    if (typeof charclass !== 'undefined') {
+      var validClass = true;
+      if (charclass == CHARCLASS.DIRECTOR) {
+        for (var playerId in lobby.players) {
+          var player = lobby.players[playerId];
+          if (player.isReady && player.charclass == CHARCLASS.DIRECTOR) {
+            validClass = false;
+          }
+        }
+      }
+
+      if (validClass) {
+        socket.emit('the charclass chosen is valid');
+      } else {
+        socket.emit('the charclass chosen is invalid');
+      }
+    }
+  });
+
   socket.on('this client is ready to play', function() {
     var player = lobby.players[socket.id];
     if (typeof player !== 'undefined') {
       logger(player.name + ' is ready to play', 1);
       player.isReady = true;
 
-      // If player is the first one to be ready, start the countdown
-      if (lobby.nobodyReady) {
-        lobby.nobodyReady = false;
-        io.sockets.emit('a new game will be starting soon');
-        setTimeout(function() {
-          // Only start game on callback if it hasn't started during timeout time
-          if (game.pubData.currentState === 0) {
-            startGame();
-          }
-        }, GAMECFG.timeBeforeGameStart * 1000);
-      }
+      if (game.pubData.currentState === 0) {
+        // If player is the first one to be ready, start the countdown
+        if (lobby.nobodyReady) {
+          logger('Starting a new game soon', 1);
+          lobby.nobodyReady = false;
+          io.sockets.emit('a new game will be starting soon');
+          setTimeout(function() {
+            // Only start game on callback if it hasn't started during timeout time
+            if (game.pubData.currentState === 0) {
+              startGame();
+            }
+          }, GAMECFG.timeBeforeGameStart * 1000);
+        }
 
-      socket.broadcast.emit('a client is ready to play', socket.id);
-      if (allReadyToPlay()) {
-        startGame();
+        socket.broadcast.emit('a client is ready to play', socket.id);
+        if (allReadyToPlay()) {
+          startGame();
+        }
       }
     }
   });
@@ -264,7 +287,7 @@ function deletePlayer(socket) {
     delete game.pubData.players[socket.id];
   }
   // If game is empty, switch back to lobby for everyone
-  if (game.pubData.currentState == 1 && noPlayersInGame()) {
+  if (game.pubData.currentState === 1 && noPlayersInGame()) {
     logger('Game empty, switch to lobby state', 1);
     switchToLobbyState();
   } else if (game.pubData.currentState === 0 && allReadyToPlay()) {
@@ -457,10 +480,20 @@ function handleLevelUp(survivor) {
   if (typeof expForLevelUp !== 'undefined') {
     if (survivor.experience >= expForLevelUp) {
       survivor.level++;
+
+      // Give player more health
+      var baseHp = CHARCLASSES[survivor.charclass].baseHp;
+      survivor.maxHp = parseInt(survivor.maxHp + (survivor.level * (baseHp / 10)), 10);
+
       logger(survivor.name + ' is now level ' + survivor.level, 2); 
       io.sockets.emit('a player leveled up', {
         id: survivor.id,
-        level: survivor.level
+        level: survivor.level,
+        attrs: {
+          maxHp: survivor.maxHp,
+          // Heal player to full health
+          currHp: survivor.maxHp
+        }
       });
     }
   }

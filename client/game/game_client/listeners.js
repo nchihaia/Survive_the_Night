@@ -43,6 +43,21 @@ socket.on('a new game will be starting soon', function() {
   }, GAMECFG.timeBeforeGameStart * 1000);
 });
 
+
+socket.on('the charclass chosen is valid', function(data) {
+  if (game.currentState === 0) {
+    socket.emit('this client is ready to play');
+  } else if (game.currentState == 1) {
+    // A game is already in progress so switch straight to the play screen
+    me.state.change(me.state.PLAY);
+  }
+  lobby.players[mainPlayerId].isReady = true;
+});
+
+socket.on('the charclass chosen is invalid', function(data) {
+  alert('Invalid class');
+});
+
 /*
  * Game listeners
  */
@@ -133,6 +148,8 @@ socket.on('a player leveled up', function(data) {
   if (typeof player !== 'undefined') {
     player.level = data.level;
     logger(player.name + ' is now level ' + data.level, 2); 
+    // Merge attributes
+    customMerge(player, data.attrs, GAMECFG.playerFields);
     if (data.id == mainPlayerId) {
       me.game.HUD.updateItemValue('charItem');
     }
