@@ -32,6 +32,7 @@ eval(fs.readFileSync('./shared/helpers.js') + '');
 eval(fs.readFileSync('./shared/charclasses.js') + '');
 eval(fs.readFileSync('./shared/charlevels.js') + '');
 eval(fs.readFileSync('./shared/minions.js') + '');
+eval(fs.readFileSync('./shared/entity_types.js') + '');
 
 // Filter for these fields when receiving update packets from clients
 var updateFields = GAMECFG.playerUpdateFields.concat(GAMECFG.playerUpdateActions);
@@ -99,7 +100,7 @@ io.sockets.on('connection', function(socket) {
         }
       }
 
-      if (validClass) {
+      if (validClass || !GAMECFG.directorClassRestrict) {
         socket.emit('the charclass chosen is valid');
       } else {
         socket.emit('the charclass chosen is invalid');
@@ -254,6 +255,10 @@ function initGame() {
       // 1 - Playing game
       currentState: 0,
       time: GAMECFG.startingTime,
+      score: {
+        survivors: 0,
+        director: 0
+      },
       players: {},
       // Minion fields: 
       // id (key), minionType, producerId, posX, posY, maxHp, currHp
@@ -359,6 +364,7 @@ function addPlayer(id, name, charclass) {
     id: id,
     name: name,
     charclass: charclass,
+    entType: CHARCLASSES[charclass].entType,
     level: CHARCLASSES[charclass].baseLevel,
     maxHp: CHARCLASSES[charclass].baseHp,
     currHp: CHARCLASSES[charclass].baseHp,
@@ -374,6 +380,7 @@ function addMinion(minion, producerId) {
     minion.producerId = producerId;
     minion.maxHp = MINIONTYPES[minion.minionType].baseHp;
     minion.currHp = minion.maxHp;
+    minion.entType = ENTTYPES.ENEMY;
 
     logger('New minion with id: ' + minion.id, 1);
     // Since it is assumed there is only one director summoning minions,
@@ -461,6 +468,22 @@ function calcAttack(attacker, target, damage) {
     target.currHp -= damage;
     if (target.currHp <= 0) {
       logger(attacker.name + ' has slain ' + target.name, 2);
+
+      // Give points to either the survivors or the director
+      if (typeof attacker.entType !== 'undefined') {
+        // Points to survivors
+        if (attacker.entType == ENTTYPES.SURVIVOR) {
+          if (typeof target.minionType !== 'undefined') {
+            game.pubData.score.survivors += MINIONTYPES[target.minionType].points;
+            logger('The survivors now have ' + game.pubData.score.survivors + ' points', 2);
+          }
+        } else if (typeof target.level !== 'undefined') {
+          // Points to director
+          game.pubData.score.director += (target.level * 25);
+          logger('The director now has ' + game.pubData.score.director + ' points', 2);
+        }
+      }
+
       delFromGame(target);
     }
     return true;

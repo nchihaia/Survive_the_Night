@@ -91,6 +91,9 @@ socket.on('server sending game state', function(serverGame) {
         syncMinion(minion, serverMinion);
       }
     }
+    // Set scores
+    game.score.survivors = serverGame.score.survivors;
+    game.score.director = serverGame.score.director;
     // Set time
     game.time.rawVal = serverGame.time;
   }

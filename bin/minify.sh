@@ -9,7 +9,9 @@ cat ../shared/config.js \
     ../client/game/assets.js \
     ../client/game/ui/time.js \
     ../client/game/ui/char.js \
+    ../client/game/ui/score.js \
     ../client/game/entities/entity.js \
+    ../client/game/entities/pathfinding.js \
     ../client/game/entities/players/player.js \
     ../client/game/entities/players/survivor.js \
     ../client/game/entities/players/director.js \

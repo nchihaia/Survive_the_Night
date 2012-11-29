@@ -87,6 +87,8 @@ function printDetailedGame() {
 
   logger('Current state: ' + gameObj.currentState);
 
+  logger('Scores: ' + 'Survivors ' + gameObj.score.survivors + ', Director ' + gameObj.score.director);
+
   var time = gameObj.time.rawval || gameObj.time;
   logger('Current time: ' + time);
 

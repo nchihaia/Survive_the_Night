@@ -9,6 +9,8 @@ var MINIONTYPES = [
     entType: 1,
     baseHp: 10,
     actionCooldownTime: 1000,
-    damage: 5
+    damage: 5,
+    // How many points do the survivors get when this minion is slain
+    points: 10
   }
 ];

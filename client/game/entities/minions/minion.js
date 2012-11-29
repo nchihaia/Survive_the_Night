@@ -10,9 +10,9 @@ var MinionEntity = PathfindingEntity.extend( {
     this.defaultAnimationSet();
 
     this.collidable = true;
-    this.setVelocity(4, 4);
+    this.setVelocity(7, 7);
     this.setFriction(0.7, 0.7);
-    this.setMaxVelocity(6, 6);
+    this.setMaxVelocity(10, 10);
 
     customMerge(this, attrs, GAMECFG.minionFields);
     this.pos.x = attrs.posX || producer.pos.x;
@@ -31,7 +31,7 @@ var MinionEntity = PathfindingEntity.extend( {
     if (typeof this.currHp === 'undefined') {
       this.currHp = this.maxHp;
     }
-    
+
     // Set id and name of the entity.  This is done after init so that
     // we can grab the GUID set by melonJS
     this.setId();
@@ -43,6 +43,23 @@ var MinionEntity = PathfindingEntity.extend( {
   },
 
   update: function() {
+    // Pick a random survivor to attack
+    if (typeof this.target === 'undefined' || 
+       (typeof this.target !== 'undefined' && !this.target.alive)) {
+      var playerKeys = Object.keys(game.players);
+      var randomIndex = parseInt(Math.random() * playerKeys.length, 10);
+      this.target = game.players[playerKeys[randomIndex]];
+      // // Make sure player picked is not the director
+      // if (randomPlayer.charclass != CHARCLASS.DIRECTOR && playerKeys.length === 1) {
+      //   while (this.target.charclass == CHARCLASS.DIRECTOR) {
+      //     randomPlayerKey = parseInt(Math.random() * playerKeys.length, 10);
+      //     this.target = game.players[randomPlayerKey];
+      //   }
+      // }
+    } else {
+      this.findPath(this.target.pos.x, this.target.pos.y);
+    }
+
     this.parent(this);
     return true;
   },
@@ -51,14 +68,22 @@ var MinionEntity = PathfindingEntity.extend( {
     this.drawHp(context);
     this.parent(context);
   },
-  
+
   onDestroyEvent: function() {
-    // Drops either an ammo box or medkit
-    var roll = parseInt(2 * Math.random(), 10);
-    if (roll === 0) {
-      this.dropItem(AmmoCollectible);
-    } else {
-      this.dropItem(MedkitCollectible);
+    if (me.state.current().name === 'play') {
+      // increment survivor's score
+      game.score.survivors += MINIONTYPES[this.minionType].points;
+      me.game.HUD.updateItemValue('scoreItem');
+
+      // Drops either an ammo box or medkit for survivors only
+      if (game.players[mainPlayerId].charclass != CHARCLASS.DIRECTOR) {
+        var roll = parseInt(2 * Math.random(), 10);
+        if (roll === 0) {
+          this.dropItem(AmmoCollectible);
+        } else {
+          this.dropItem(MedkitCollectible);
+        }
+      }
     }
   },
 

@@ -42,6 +42,13 @@ var PlayerEntity = Entity.extend( {
     // Lower values => less delay, possibly less fidelity 
     this.updatesMargin = 1;
     this.maxUpdatesToKeep = parseInt(this.updatesMargin / GAMECFG.marginMaxUpdatesRatio, 10);
+  },
+
+  onDestroyEvent: function() {
+    if (me.state.current().name === 'play' && this.entType == ENTTYPES.SURVIVOR) {
+      game.score.director += (this.level * 25);
+      me.game.HUD.updateItemValue('scoreItem');
+    }
   }
 });
 
@@ -95,6 +102,7 @@ var MainPlayerEntity = PlayerEntity.extend( {
     if (me.input.isKeyPressed('esc')) {
       logger('Exiting to lobby', 1);
       socket.emit('this client exits the current game to lobby');
+      lobby.players[mainPlayerId].isReady = false;
       me.state.change(me.state.LOBBY);
     } else {
       if (me.input.isKeyPressed('left')) {

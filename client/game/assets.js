@@ -67,6 +67,12 @@ var assets = [
   },
 
   {
+    name: 'map_01_tileset2',
+    type: 'image',
+    src: 'assets/maps/map_01_tileset2.jpg'
+  },
+
+  {
     name: 'metatiles32x32',
     type: 'image',
     src: 'assets/maps/metatiles32x32.png'

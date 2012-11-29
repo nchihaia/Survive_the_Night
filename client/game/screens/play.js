@@ -1,6 +1,7 @@
 var PlayScreen = me.ScreenObject.extend( {
 
   onResetEvent: function() {	
+    this.name = 'play';
     // Bind needed keys
     me.input.bindKey(me.input.KEY.ENTER, 'enter', true);
     me.input.bindKey(me.input.KEY.ESC, 'esc', true);
@@ -20,6 +21,10 @@ var PlayScreen = me.ScreenObject.extend( {
     // Time UI
     game.time = new TimeItem();
     me.game.HUD.addItem('timeItem', game.time);
+
+    // Score UI
+    game.score = new ScoreItem();
+    me.game.HUD.addItem('scoreItem', game.score);
 
     // Character UI
     game.charDisplay = new CharItem();
@@ -45,7 +50,7 @@ var PlayScreen = me.ScreenObject.extend( {
       charclass: charclass
     };
     var xPos = GAMECFG.survivorStartingXPos;
-    var yPos = GAMECFG.survivorStartingXPos;
+    var yPos = GAMECFG.survivorStartingYPos;
     if (charclass == CHARCLASS.DIRECTOR) {
       game.players[mainPlayerId] = new MainDirectorEntity(xPos, yPos, {}, attrs);
     } else {
@@ -83,6 +88,10 @@ var PlayScreen = me.ScreenObject.extend( {
     
     if (typeof game.time !== 'undefined') {
       me.game.HUD.removeItem('timeItem');
+    }
+
+    if (typeof game.score !== 'undefined') {
+      me.game.HUD.removeItem('scoreItem');
     }
 
     if (typeof game.charItem !== 'undefined') {

@@ -71,7 +71,20 @@ var Entity = me.ObjectEntity.extend( {
 
   calcDamage: function(target, attack) {
     if (typeof target !== 'undefined' && target.alive) {
-      return attack.damage;
+      var damage = attack.damage;
+      // If this function is called by the main player, or the target is the main player,
+      // do some additional damage calculation.  Otherwise, just return attack.damage
+      // since this was obviously passed onto us by the server
+      if (this.id == mainPlayerId || target.id == mainPlayerId) {
+        var isNighttime = game.time.isNighttime();
+
+        // Double damage for minions at night; double damage for survivors in the daytime
+        if ((isNighttime && this.isMinion) || (!isNighttime && this.entType == ENTTYPES.SURVIVOR)) {
+          // Double damage for minions at night
+          damage *= 2;
+        } 
+      }
+      return damage;
     } else {
       return 0;
     }

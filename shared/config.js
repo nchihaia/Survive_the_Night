@@ -18,12 +18,15 @@ var GAMECFG = {
   timeBeforeGameStart: 10,
 
   // The x and y coordinates of where a survivor entity spawns
-  survivorStartingXPos: 100,
-  survivorStartingYPos: 100,
+  survivorStartingXPos: 1130,
+  survivorStartingYPos: 160,
   
   // The mininum of max opacity for the color layer representing day and night
   minLightOpacity: 0,
   maxLightOpacity: 0.75,
+
+  // Whether or not to have only 1 director
+  directorClassRestrict: true,
 
   // Time to start the game (in minutes after midnight on the first day)
   // 600 => 10:00 AM Day 1

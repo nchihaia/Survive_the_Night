@@ -27,6 +27,7 @@ function initGame() {
     // 1 - Playing game
     currentState: 0,
     time: undefined,
+    score: undefined,
     charDisplay: undefined,
     updatenum: undefined,
     numPacketsLost: 0,

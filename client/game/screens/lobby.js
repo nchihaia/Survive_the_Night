@@ -1,6 +1,7 @@
 LobbyScreen = me.ScreenObject.extend( {
   init: function() {
     this.parent(true);
+    this.name = 'lobby';
   },
 
   onResetEvent: function() {
@@ -168,7 +169,7 @@ LobbyScreen = me.ScreenObject.extend( {
       */
       context.fillStyle = 'black';
       context.font = 'bold 18px Droid Sans';
-      yPos += 100;
+      yPos += 120;
       var text = 'Choose your class then press ENTER to ready up';
       if (game.currentState === 0) {
         // For when a game hasn't started yet and everyone is in the lobby

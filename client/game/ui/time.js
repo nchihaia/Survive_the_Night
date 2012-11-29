@@ -16,13 +16,18 @@ var TimeItem = me.HUD_Item.extend( {
       amPM = 'PM';
     }
 
+    // 0 means 12
+    if (hour === 0) {
+      hour = 12;
+    }
+
     if (minutes < 10) {
       minutes = '0' + minutes;
     }
 
     var timeDisplay = 'Day ' + day + ' - ' + hour + ':' + minutes + ' ' + amPM;
 
-    context.font = 'bold 30px Oswald';
+    context.font = 'bold 25px Droid Sans';
     context.textAlign = 'center';
     context.fillStyle = 'black';
     context.fillText(timeDisplay, this.pos.x, this.pos.y);
@@ -41,5 +46,14 @@ var TimeItem = me.HUD_Item.extend( {
 
   getMinutes: function() {
      return this.rawVal % 60;
+  },
+
+  isNighttime: function() {
+    var hour = this.getHour();
+    // Nighttime between 6PM-7AM
+    if (hour < 7 || hour >= 18) {
+      return true;
+    }
+    return false;
   }
 });

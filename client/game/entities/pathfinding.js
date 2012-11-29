@@ -24,7 +24,7 @@ var PathfindingEntity = Entity.extend( {
 
 
   update: function() {
-    this.findPath(this.producer.pos.x, this.producer.pos.y);
+    // this.findPath(this.producer.pos.x, this.producer.pos.y);
 
     this.updateMovement();
     this.parent(this);
