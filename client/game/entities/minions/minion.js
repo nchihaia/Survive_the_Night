@@ -1,4 +1,4 @@
-var MinionEntity = Entity.extend( {
+var MinionEntity = PathfindingEntity.extend( {
 
   init: function(producer, attrs) {
     settings = {};
@@ -10,6 +10,9 @@ var MinionEntity = Entity.extend( {
     this.defaultAnimationSet();
 
     this.collidable = true;
+    this.setVelocity(4, 4);
+    this.setFriction(0.7, 0.7);
+    this.setMaxVelocity(6, 6);
 
     customMerge(this, attrs, GAMECFG.minionFields);
     this.pos.x = attrs.posX || producer.pos.x;
