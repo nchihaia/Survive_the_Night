@@ -101,6 +101,24 @@ var assets = [
     type: 'image',
     src: 'assets/maps/barricade.jpg'
   },
+  
+  {
+    name: '03_wire',
+    type: 'image',
+    src: 'assets/maps/03_wire.jpg'
+  },
+  
+  {
+    name: 'tileable-tt7002066-verydark',
+    type: 'image',
+    src: 'assets/maps/tileable-tt7002066-verydark.png'
+  },
+  
+  {
+    name: 'tile_floor',
+    type: 'image',
+    src: 'assets/maps/tile_floor.png'
+  },
 
   /*
   * Levels
