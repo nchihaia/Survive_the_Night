@@ -15,7 +15,7 @@ var GAMECFG = {
 
   // How many seconds to wait start the game after the first client gives the ready signal.
   // This is to prevent an idle client from keeping a game from starting
-  timeBeforeGameStart: 10,
+  timeBeforeGameStart: 60,
 
   // The x and y coordinates of where a survivor entity spawns
   survivorStartingXPos: 1130,
@@ -37,7 +37,7 @@ var GAMECFG = {
   startingTime: 600,
 
   // Number of seconds to count down before a game begins
-  countdownTime: 1,
+  countdownTime: 10,
 
   // The margin of error before adjusting the position of a player controlled
   // by a another client
@@ -57,7 +57,7 @@ var GAMECFG = {
   marginMaxUpdatesRatio: 6,
 
   // On the server side, how often (in seconds) to periodically print the current game/lobby objects
-  periodicPrint: 5,
+  periodicPrint: 60,
   
   // How often (in minutes) to send out a sync packet to all clients.  Shouldn't be too
   // low of a number
