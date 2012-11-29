@@ -119,6 +119,7 @@ io.sockets.on('connection', function(socket) {
         if (lobby.nobodyReady) {
           logger('Starting a new game soon', 1);
           lobby.nobodyReady = false;
+          // game.map = parseInt(Math.random() * 2, 10);
           io.sockets.emit('a new game will be starting soon');
           setTimeout(function() {
             // Only start game on callback if it hasn't started during timeout time
@@ -132,6 +133,8 @@ io.sockets.on('connection', function(socket) {
         if (allReadyToPlay()) {
           startGame();
         }
+      } else {
+        socket.emit('a game is happening');
       }
     }
   });
@@ -254,6 +257,8 @@ function initGame() {
       // 0 - In lobby, forming teams
       // 1 - Playing game
       currentState: 0,
+      maps: ['map_01', 'map_02'],
+      map: 'map_01',
       time: GAMECFG.startingTime,
       score: {
         survivors: 0,
@@ -481,6 +486,7 @@ function calcAttack(attacker, target, damage) {
           // Points to director
           game.pubData.score.director += (target.level * 25);
           logger('The director now has ' + game.pubData.score.director + ' points', 2);
+          target.currHp = target.maxHp;
         }
       }
 

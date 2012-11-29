@@ -58,6 +58,10 @@ socket.on('the charclass chosen is invalid', function(data) {
   alert('Invalid class');
 });
 
+socket.on('a game is happening', function() {
+   me.state.change(me.state.PLAY);
+});
+
 /*
  * Game listeners
  */

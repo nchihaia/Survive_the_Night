@@ -57,6 +57,17 @@ var OtherDirectorEntity = OtherPlayerEntity.extend( {
         });
         game.minions[minion.id] = minion;
       }
+
+      if (typeof updateItem.minionTargets !== 'undefined') {
+        for (var i=0; i < updateItem.minionTargets.length; i++) {
+          var minionTarget = updateItem.minionTargets[i];
+          var minionThatAttacks = findEntityById(minionTarget.minionId);
+          var targetOfMinion = findEntityById(minionTarget.targetId);
+          if (typeof minionThatAttacks !== 'undefined' && typeof targetOfMinion !== 'undefined') {
+            minionThatAttacks.target = targetOfMinion;
+          }
+        }
+      }
     }
     this.parent(updateItem);
   }

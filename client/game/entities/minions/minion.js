@@ -3,16 +3,16 @@ var MinionEntity = PathfindingEntity.extend( {
   init: function(producer, attrs) {
     settings = {};
     settings.image = MINIONTYPES[attrs.minionType].sprite;
-    settings.spritewidth = 32;
+    settings.spritewidth = 39;
     settings.spriteheight = 48;
     this.parent(0, 0, settings);
 
     this.defaultAnimationSet();
 
     this.collidable = true;
-    this.setVelocity(7, 7);
+    this.setVelocity(MINIONTYPES[attrs.minionType].speed, MINIONTYPES[attrs.minionType].speed);
     this.setFriction(0.7, 0.7);
-    this.setMaxVelocity(10, 10);
+    this.setMaxVelocity(MINIONTYPES[attrs.minionType].maxSpeed, MINIONTYPES[attrs.minionType].maxSpeed);
 
     customMerge(this, attrs, GAMECFG.minionFields);
     this.pos.x = attrs.posX || producer.pos.x;
@@ -44,19 +44,29 @@ var MinionEntity = PathfindingEntity.extend( {
 
   update: function() {
     // Pick a random survivor to attack
-    if (typeof this.target === 'undefined' || 
-       (typeof this.target !== 'undefined' && !this.target.alive)) {
-      var playerKeys = Object.keys(game.players);
-      var randomIndex = parseInt(Math.random() * playerKeys.length, 10);
-      this.target = game.players[playerKeys[randomIndex]];
-      // // Make sure player picked is not the director
-      // if (randomPlayer.charclass != CHARCLASS.DIRECTOR && playerKeys.length === 1) {
-      //   while (this.target.charclass == CHARCLASS.DIRECTOR) {
-      //     randomPlayerKey = parseInt(Math.random() * playerKeys.length, 10);
-      //     this.target = game.players[randomPlayerKey];
-      //   }
-      // }
-    } else {
+    if (typeof game.players[mainPlayerId] !== 'undefined' && game.players[mainPlayerId].charclass == CHARCLASS.DIRECTOR) {
+      if (typeof this.target === 'undefined' || 
+         (typeof this.target !== 'undefined' && !this.target.alive)) {
+          var playerKeys = Object.keys(game.players);
+          var randomIndex = parseInt(Math.random() * playerKeys.length, 10);
+          this.target = game.players[playerKeys[randomIndex]];
+          // // Make sure player picked is not the director
+          // if (randomPlayer.charclass != CHARCLASS.DIRECTOR && playerKeys.length === 1) {
+            //   while (this.target.charclass == CHARCLASS.DIRECTOR) {
+              //     randomPlayerKey = parseInt(Math.random() * playerKeys.length, 10);
+              //     this.target = game.players[randomPlayerKey];
+              //   }
+              // }
+          var mainPlayer = game.players[mainPlayerId];
+          mainPlayer.newActions.minionTargets = mainPlayer.newActions.minionTargets || [];
+          mainPlayer.newActions.minionTargets.push({
+            minionId: this.id,
+            targetId: this.target.id
+          });
+        }
+    }
+
+    if (typeof this.target !== 'undefined') {
       this.findPath(this.target.pos.x, this.target.pos.y);
     }
 

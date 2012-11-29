@@ -59,7 +59,7 @@ var CHARCLASSES = [
     entType: 1,
     baseLevel: 99,
     baseHp: 1000000,
-    actionCooldownTime: 1500,
-    startingAmmoAmount: 20
+    actionCooldownTime: 2000,
+    startingAmmoAmount: 100
   }
 ];

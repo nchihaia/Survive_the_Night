@@ -21,6 +21,18 @@ var Entity = me.ObjectEntity.extend( {
     this.setCurrentAnimation(this.animation);
   },
 
+  update: function() {
+    // Standing animation if no movement detected
+    if (this.standingStill()) {
+      this.animation = 'stand_' + this.direction;
+    } else {
+      this.animation = this.direction;
+    }
+    this.setCurrentAnimation(this.animation);
+
+    this.parent(this);
+  },
+
   drawHp: function(context, yPos) {
     if (typeof yPos === 'undefined') {
       yPos = this.top;
@@ -37,7 +49,7 @@ var Entity = me.ObjectEntity.extend( {
     if (typeof yPos === 'undefined') {
       yPos = this.top;
     }
-    
+
     var text = this.name;
     if (typeof this.level !== 'undefined') {
       text += ' - Lvl ' + this.level; 
@@ -97,11 +109,23 @@ var Entity = me.ObjectEntity.extend( {
       logger(this.name + ' hits ' + entity.name + ' for ' + damage + ' damage', 2);
 
       if (entity.currHp <= 0) {
-        if (entity.alive) {
-          entity.alive = false;
-          entity.flicker(20, function() {
-            delFromGame(entity);
-          });
+        if (entity.entType == ENTTYPES.ENEMY) {
+          if (entity.alive) {
+            entity.alive = false;
+            entity.flicker(20, function() {
+              delFromGame(entity);
+            });
+          }
+        } else {
+          if (typeof game.score !== 'undefined') {
+            game.score.director += (this.level * 25);
+            me.game.HUD.updateItemValue('scoreItem');
+            if (entity.id == mainPlayerId) {
+              entity.pos.x = GAMECFG.survivorStartingXPos;
+              entity.pos.y = GAMECFG.survivorStartingYPos;
+              entity.currHp = entity.maxHp;
+            }
+          }
         }
       }
       return damage;
@@ -120,7 +144,7 @@ var Entity = me.ObjectEntity.extend( {
     me.game.add(droppedItem, 2);
     me.game.sort();
   },
-  
+
   // Returns damage that ability hit for if not on cooldown, false otherwise
   attemptAbility: function(targetEntity, ability) {
     if (!this.actionOnCooldown) {
@@ -139,7 +163,7 @@ var Entity = me.ObjectEntity.extend( {
       return false;
     }
   },
-  
+
   // Increase this entity's hp by 
   hpIncrease: function(amount) {
     var newHp = this.currHp + amount;

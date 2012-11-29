@@ -13,7 +13,7 @@ var PlayScreen = me.ScreenObject.extend( {
     me.input.bindKey(me.input.KEY.D, 'action');
 
     // Load the default level.  These levels are defined in assets.js
-    me.levelDirector.loadLevel('map_01');
+    me.levelDirector.loadLevel(game.map);
 
     // Add a HUD (whole screen coverage)
     me.game.addHUD(0, 0, me.video.getWidth(), me.video.getHeight());
@@ -26,10 +26,6 @@ var PlayScreen = me.ScreenObject.extend( {
     game.score = new ScoreItem();
     me.game.HUD.addItem('scoreItem', game.score);
 
-    // Character UI
-    game.charDisplay = new CharItem();
-    me.game.HUD.addItem('charItem', game.charDisplay);
-
     // Intervals
     var timeIntervalRate = 10000 / GAMECFG.gameMinutesPerSecond;
     this.incrementTimeId = setInterval(incrementTime, timeIntervalRate);
@@ -40,26 +36,10 @@ var PlayScreen = me.ScreenObject.extend( {
     this.lightOverlay.opacity = 0;
     me.game.add(this.lightOverlay, 5);
     this.tweenStep = (GAMECFG.maxLightOpacity - GAMECFG.minLightOpacity) / 12;
-
-    // Add the player the client controls to the game
-    var charclass = lobby.players[mainPlayerId].charclass;
-    var attrs = { 
-      id: mainPlayerId,
-      name: lobby.players[mainPlayerId].name,
-      level: CHARCLASSES[charclass].baseLevel,
-      charclass: charclass
-    };
-    var xPos = GAMECFG.survivorStartingXPos;
-    var yPos = GAMECFG.survivorStartingYPos;
-    if (charclass == CHARCLASS.DIRECTOR) {
-      game.players[mainPlayerId] = new MainDirectorEntity(xPos, yPos, {}, attrs);
-    } else {
-      game.players[mainPlayerId] = new MainSurvivorEntity(xPos, yPos, {}, attrs);
-    }
-    me.game.add(game.players[mainPlayerId], 2);
-    me.game.sort();
-
     this.lightTween();
+
+    // Add main player
+    addMainPlayer();
 
     game.currentState = 1;
     socket.emit('this client is in the game');

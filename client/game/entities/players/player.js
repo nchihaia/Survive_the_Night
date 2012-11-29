@@ -45,10 +45,6 @@ var PlayerEntity = Entity.extend( {
   },
 
   onDestroyEvent: function() {
-    if (me.state.current().name === 'play' && this.entType == ENTTYPES.SURVIVOR) {
-      game.score.director += (this.level * 25);
-      me.game.HUD.updateItemValue('scoreItem');
-    }
   }
 });
 
@@ -129,14 +125,6 @@ var MainPlayerEntity = PlayerEntity.extend( {
 
     this.updateMovement();
 
-    // Standing animation if no movement detected
-    if (this.standingStill()) {
-      this.animation = 'stand_' + this.direction;
-    } else {
-      this.animation = this.direction;
-    }
-    this.setCurrentAnimation(this.animation);
-    
     // Package into an update item
     var updateItem = this.copyMovement();
     customMerge(updateItem, this.newActions, GAMECFG.playerUpdateActions);

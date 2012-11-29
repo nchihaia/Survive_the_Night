@@ -20,6 +20,10 @@ var GAMECFG = {
   // The x and y coordinates of where a survivor entity spawns
   survivorStartingXPos: 1130,
   survivorStartingYPos: 160,
+
+  // The x and y coordinates of where a director entity spawns
+  directorStartingXPos: 1130,
+  directorStartingYPos: 160,
   
   // The mininum of max opacity for the color layer representing day and night
   minLightOpacity: 0,
@@ -70,7 +74,7 @@ var GAMECFG = {
 
   // Custom player update fields (actions players perform) shared between clients.
   // These usually have to be parse through and set one by one
-  playerUpdateActions: ['shotWeapon', 'summonedMinions', 'attackHits', 'wasAttacked', 'hpIncreases'],
+  playerUpdateActions: ['shotWeapon', 'summonedMinions', 'attackHits', 'wasAttacked', 'hpIncreases', 'minionTargets'],
 
   minionFields: ['id', 'minionType', 'producerId', 'posX', 'posY', 'currHp', 'maxHp']
 };

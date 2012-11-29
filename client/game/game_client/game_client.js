@@ -26,6 +26,7 @@ function initGame() {
     // 0 - In lobby, forming teams
     // 1 - Playing game
     currentState: 0,
+    map: 'map_01',
     time: undefined,
     score: undefined,
     charDisplay: undefined,

@@ -68,6 +68,29 @@ function findEntityById(id) {
   }
 }
 
+function addMainPlayer() {
+  // Add the player the client controls to the game
+  var charclass = lobby.players[mainPlayerId].charclass;
+  var attrs = { 
+    id: mainPlayerId,
+    name: lobby.players[mainPlayerId].name,
+    level: CHARCLASSES[charclass].baseLevel,
+    charclass: charclass
+  };
+
+  if (charclass == CHARCLASS.DIRECTOR) {
+    game.players[mainPlayerId] = new MainDirectorEntity(GAMECFG.directorStartingXPos, GAMECFG.directorStartingYPos, {}, attrs);
+  } else {
+    game.players[mainPlayerId] = new MainSurvivorEntity(GAMECFG.survivorStartingXPos, GAMECFG.survivorStartingYPos, {}, attrs);
+  }
+  me.game.add(game.players[mainPlayerId], 2);
+  me.game.sort(); 
+
+  // Character UI
+  game.charDisplay = new CharItem();
+  me.game.HUD.addItem('charItem', game.charDisplay);
+}
+
 function delFromGame(entity) {
   if (typeof me !== 'undefined') {
     me.game.remove(entity);
