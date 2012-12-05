@@ -169,7 +169,9 @@ var Entity = me.ObjectEntity.extend( {
     var newHp = this.currHp + amount;
     this.currHp = Math.min(newHp, this.maxHp);
     me.game.HUD.updateItemValue('charItem');
-    this.newActions.hpIncreases = this.newActions.hpIncreases || [];
-    this.newActions.hpIncreases.push(amount);
+    if (typeof this.newActions !== 'undefined') {
+      this.newActions.hpIncreases = this.newActions.hpIncreases || [];
+      this.newActions.hpIncreases.push(amount);
+    }
   }
 });

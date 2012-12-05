@@ -1,8 +1,8 @@
-mock sprites:
+Character sprites:
 http://untamed.wild-refuge.net/rmxpresources.php?characters
 
-mock tileset:
+Map tilesets:
 http://www.hbgames.org/forums/viewtopic.php?f=160&t=65934
 
-pickup sprites:
+Ammo and health pickups:
 http://forum.zdoom.org/viewtopic.php?f=37&t=33595
