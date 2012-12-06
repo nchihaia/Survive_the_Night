@@ -5,10 +5,24 @@ var MainDirectorEntity = MainPlayerEntity.extend( {
     this.parent(x, y, settings, attrs);
   },
 
-  performAbility: function() {
+  performAbility: function(garbage, key) {
+    var n = key;
+    switch(n)
+    {
+        case "D": {this.summonBasic();break;}
+        case "F": {this.summonSuper();break;}
+    }
+    return 0;
+  },
+
+  update: function() {
+    var entRes = me.game.collide(this);
+    this.parent(this);
+  },
+summonBasic: function()
+  {
     var minion = this.summon(MinionEntity, { minionType: MINIONTYPE.BASIC });
     minion.setId();
-
     this.newActions.summonedMinions = [{ 
       id: minion.id,
       minionType: MINIONTYPE.BASIC,
@@ -17,12 +31,18 @@ var MainDirectorEntity = MainPlayerEntity.extend( {
       posY: minion.pos.y
     }];
     game.minions[minion.id] = minion;
-    return 0;
   },
-
-  update: function() {
-    var entRes = me.game.collide(this);
-    this.parent(this);
+  summonSuper: function()
+  {
+      var minion = this.summon(MinionEntity, { minionType: MINIONTYPE.SUPER});
+      minion.setId();
+      this.newActions.summonedMinions =[{
+      minionType:MINIONTYPE.SUPER,
+      name: minion.name,
+      posX: minion.pos.x,
+      posY: minion.pos.y
+      }];
+  game.minions[minion.id] = minion;
   }
 });
 
@@ -71,4 +91,6 @@ var OtherDirectorEntity = OtherPlayerEntity.extend( {
     }
     this.parent(updateItem);
   }
-});
+}
+
+);
