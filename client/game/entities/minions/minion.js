@@ -1,18 +1,20 @@
+var target;
 var MinionEntity = PathfindingEntity.extend( {
 
   init: function(producer, attrs) {
     settings = {};
     settings.image = MINIONTYPES[attrs.minionType].sprite;
-    settings.spritewidth = 39;
+    settings.spritewidth = 32;
     settings.spriteheight = 48;
     this.parent(0, 0, settings);
 
     this.defaultAnimationSet();
 
     this.collidable = true;
-    this.setVelocity(MINIONTYPES[attrs.minionType].speed, MINIONTYPES[attrs.minionType].speed);
+    this.setVelocity(7, 7);
     this.setFriction(0.7, 0.7);
-    this.setMaxVelocity(MINIONTYPES[attrs.minionType].maxSpeed, MINIONTYPES[attrs.minionType].maxSpeed);
+    this.setMaxVelocity(10, 10);
+    this.target = this.producer;
 
     customMerge(this, attrs, GAMECFG.minionFields);
     this.pos.x = attrs.posX || producer.pos.x;
@@ -45,31 +47,10 @@ var MinionEntity = PathfindingEntity.extend( {
 
   update: function() {
     // Pick a random survivor to attack
-    if (typeof game.players[mainPlayerId] !== 'undefined' && game.players[mainPlayerId].charclass == CHARCLASS.DIRECTOR) {
-      if (typeof this.target === 'undefined' || 
-         (typeof this.target !== 'undefined' && !this.target.alive)) {
-          var playerKeys = Object.keys(game.players);
-          var randomIndex = parseInt(Math.random() * playerKeys.length, 10);
-          this.target = game.players[playerKeys[randomIndex]];
-          // // Make sure player picked is not the director
-          // if (randomPlayer.charclass != CHARCLASS.DIRECTOR && playerKeys.length === 1) {
-            //   while (this.target.charclass == CHARCLASS.DIRECTOR) {
-              //     randomPlayerKey = parseInt(Math.random() * playerKeys.length, 10);
-              //     this.target = game.players[randomPlayerKey];
-              //   }
-              // }
-          var mainPlayer = game.players[mainPlayerId];
-          mainPlayer.newActions.minionTargets = mainPlayer.newActions.minionTargets || [];
-          mainPlayer.newActions.minionTargets.push({
-            minionId: this.id,
-            targetId: this.target.id
-          });
-        }
-    }
-
-    if (typeof this.target !== 'undefined') {
+    if(this.target == undefined)
+        {this.target = this.producer;}
+    this.findTarget();
       this.findPath(this.target.pos.x, this.target.pos.y);
-    }
 
     this.parent(this);
     return true;
@@ -121,5 +102,17 @@ var MinionEntity = PathfindingEntity.extend( {
   performAttack: function(target, attack) {
     var damage = this.parent(target, attack);
     return damage;
+  },
+  findTarget: function()
+  {
+      if(!this.target.alive)
+          {this.target = this.producer;}
+    var gameObj = game.pubData || game;
+    for (var playerId in gameObj.players)
+        {
+           var closest = gameObj.players[playerId];
+           if((this.distanceTo(closest) < this.distanceTo(this.target) && closest.entType == 0 && closest.alive) || this.target.pos == this.producer.pos)
+               {this.target = closest;}
+        }
   }
 });
