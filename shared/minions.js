@@ -1,5 +1,6 @@
 var MINIONTYPE = {
-  BASIC: 0
+  BASIC: 0,
+  SUPER: 1
 };
 
 var MINIONTYPES = [
