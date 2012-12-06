@@ -3,16 +3,17 @@ var BulletProjectile = me.ObjectEntity.extend( {
   init: function(producer) {
     settings = {};
     settings.image = 'bullet';
-    settings.spritewidth = 10;
-    settings.spriteheight = 10;
+    settings.spritewidth = 20;
+    settings.spriteheight = 20;
 
     this.parent(0, 0, settings);
-
+	
+	this.setTransparency('#FFFFFF');//white
+	
     this.addAnimation('vert', [0]);
-    this.addAnimation('horiz', [1]);
 
     this.collidable = true;
-    this.resize(0.6);
+    this.resize(1.0);
 
     this.producer = producer;
     this.damage = 1;
@@ -21,24 +22,35 @@ var BulletProjectile = me.ObjectEntity.extend( {
     this.vel.y = 0;
     this.pos.x = producer.pos.x;
     this.pos.y = (producer.top + producer.bottom) / 2;
+	
     switch(producer.direction) {
       case 'up':
         this.vel.y = -20;
         this.pos.x += 12;
+		this.angle = 0;
+		this.flipY(flip=false);
         this.setCurrentAnimation('vert');
         break;
       case 'down':
         this.vel.y = 20;
         this.pos.x += 12;
+		this.angle = Number.prototype.degToRad (180);
         this.setCurrentAnimation('vert');
         break;
       case 'left':
         this.vel.x = -20;
-        this.setCurrentAnimation('horiz');
+		
+		this.angle = Number.prototype.degToRad (270);
+		this.flipX(false);
+		
+        this.setCurrentAnimation('vert');
         break;
       case 'right':
         this.vel.x = 20;
-        this.setCurrentAnimation('horiz');
+		
+		this.angle = Number.prototype.degToRad (90);
+		
+        this.setCurrentAnimation('vert');
     }
   },
 
