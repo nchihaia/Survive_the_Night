@@ -9,8 +9,9 @@ var PlayScreen = me.ScreenObject.extend( {
     me.input.bindKey(me.input.KEY.RIGHT, 'right');
     me.input.bindKey(me.input.KEY.UP,	'up');
     me.input.bindKey(me.input.KEY.DOWN,	'down');
-    me.input.bindKey(me.input.KEY.SHIFT,	'shift');
+    me.input.bindKey(me.input.KEY.SHIFT, 'shift');
     me.input.bindKey(me.input.KEY.D, 'action');
+    me.input.bindKey(me.input.KEY.F, 'action2');
 
     // Load the default level.  These levels are defined in assets.js
     me.levelDirector.loadLevel(game.map);
