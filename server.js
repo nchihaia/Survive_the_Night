@@ -373,6 +373,7 @@ function addPlayer(id, name, charclass) {
     level: CHARCLASSES[charclass].baseLevel,
     maxHp: CHARCLASSES[charclass].baseHp,
     currHp: CHARCLASSES[charclass].baseHp,
+    dmgMultiplier: CHARCLASSES[charclass].baseDmgMultiplier,
     experience: 0,
     updates: []
   };
@@ -514,6 +515,9 @@ function handleLevelUp(survivor) {
       var baseHp = CHARCLASSES[survivor.charclass].baseHp;
       survivor.maxHp = parseInt(survivor.maxHp + (survivor.level * (baseHp / 10)), 10);
 
+      // Give player more damage
+      survivor.dmgMultiplier += CHARCLASSES[survivor.charclass].baseDmgMultiplier;
+
       logger(survivor.name + ' is now level ' + survivor.level, 2); 
       io.sockets.emit('a player leveled up', {
         id: survivor.id,
@@ -521,7 +525,8 @@ function handleLevelUp(survivor) {
         attrs: {
           maxHp: survivor.maxHp,
           // Heal player to full health
-          currHp: survivor.maxHp
+          currHp: survivor.maxHp,
+          dmgMultiplier: survivor.dmgMultiplier
         }
       });
     }

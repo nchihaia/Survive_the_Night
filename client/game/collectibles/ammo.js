@@ -7,11 +7,15 @@ var AmmoCollectible = Collectible.extend( {
   },
 
   onCollision: function(res, obj) {
+    // A collectible is only "picked up" if the main player collides with it.
     var id = obj.id;
     if (typeof id !== 'undefined' && id == mainPlayerId) {
-      game.players[mainPlayerId].ammoCount += this.amount;
-      me.game.HUD.updateItemValue('charItem');
-      me.game.remove(this);
+      var player = game.players[mainPlayerId];
+      if (typeof player !== 'undefined') {
+        player.ammoCount += this.amount * player.level;
+        me.game.HUD.updateItemValue('charItem');
+        me.game.remove(this);
+      }
     }
   }
 });

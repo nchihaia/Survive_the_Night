@@ -83,7 +83,10 @@ var Entity = me.ObjectEntity.extend( {
 
   calcDamage: function(target, attack) {
     if (typeof target !== 'undefined' && target.alive) {
-      var damage = attack.damage;
+      // Damage of an attack is the attack's damage times the attacker's damage
+      // multiplier.  The damage multiplier of survivors vary with levels.  All minions
+      // have a damage multiplier of 1.
+      var damage = attack.damage * this.dmgMultiplier;
       // If this function is called by the main player, or the target is the main player,
       // do some additional damage calculation.  Otherwise, just return attack.damage
       // since this was obviously passed onto us by the server
@@ -109,6 +112,7 @@ var Entity = me.ObjectEntity.extend( {
       logger(this.name + ' hits ' + entity.name + ' for ' + damage + ' damage', 2);
 
       if (entity.currHp <= 0) {
+        entity.slayer = this;
         if (entity.entType == ENTTYPES.ENEMY) {
           if (entity.alive) {
             entity.alive = false;
@@ -164,7 +168,7 @@ var Entity = me.ObjectEntity.extend( {
     }
   },
 
-  // Increase this entity's hp by 
+  // Increase this entity's hp by the amount given
   hpIncrease: function(amount) {
     var newHp = this.currHp + amount;
     this.currHp = Math.min(newHp, this.maxHp);

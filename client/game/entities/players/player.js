@@ -35,6 +35,10 @@ var PlayerEntity = Entity.extend( {
       this.currHp = this.maxHp;
     }
 
+    // Set damage multiplier.  This is multiplied with the attack's damage
+    // to calculate the full damage
+    this.dmgMultiplier = CHARCLASSES[this.charclass].baseDmgMultiplier;
+
     // Decide the max number of update items to keep and the margin (cutoff point)
     // that maxUpdatesToKeep has to go over before we trim the number of updates 
     // down to equal maxUpdatesToKeep.
@@ -48,6 +52,7 @@ var PlayerEntity = Entity.extend( {
   }
 });
 
+// The player controlled by the client
 var MainPlayerEntity = PlayerEntity.extend( {	
 
   init: function(x, y, settings, attrs) {

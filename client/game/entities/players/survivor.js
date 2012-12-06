@@ -6,6 +6,7 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
   },
 
   update: function() {
+    // Handle damage done to this player by a minion
     var entRes = me.game.collide(this);
     if (entRes && entRes.obj.entType == ENTTYPES.ENEMY) {
       var enemy = entRes.obj;
@@ -25,15 +26,18 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
     this.parent();
     return true;
   },
-
+  
+  // Perform the survivor's ability (fire a gun)
   performAbility: function() {
     this.shoot(BulletProjectile);
     this.newActions.shotWeapon = true;
     return 0;
   },
-
+  
+  // Called when the bullet projectile hits a target
   performAttack: function(entity, attack) {
     var damage = this.parent(entity, attack);
+    // Tell the server about the attack
     this.newActions.attackHits = this.newActions.attackHits || [];
     this.newActions.attackHits.push({ 
       damage: damage,

@@ -20,6 +20,7 @@ var MinionEntity = PathfindingEntity.extend( {
     this.producer = producer;
     this.entType = MINIONTYPES[attrs.minionType].entType;
     this.damage = MINIONTYPES[attrs.minionType].damage;
+    this.dmgMultiplier = 1;
     this.actionCooldownTime = MINIONTYPES[attrs.minionType].actionCooldownTime;
     this.isMinion = true;
 
@@ -88,10 +89,22 @@ var MinionEntity = PathfindingEntity.extend( {
       // Drops either an ammo box or medkit for survivors only
       if (game.players[mainPlayerId].charclass != CHARCLASS.DIRECTOR) {
         var roll = parseInt(2 * Math.random(), 10);
+        var collectible;
         if (roll === 0) {
-          this.dropItem(AmmoCollectible);
+          collectible = AmmoCollectible;
         } else {
-          this.dropItem(MedkitCollectible);
+          collectible = MedkitCollectible;
+        }
+        this.dropItem(collectible);
+        // Drop another of the same pickup if minion's slayer was support
+        // (Since the first collectible is dropped exactly where the minion is
+        // standing, drop this second one at an offset for some visual distinction)
+        if (typeof this.slayer !== 'undefined' && 
+            this.slayer.charclass == CHARCLASS.SUPPORT) {
+          this.dropItem(collectible, {
+            x: this.pos.x + 20,
+            y: this.pos.y + 20 
+          });
         }
       }
     }

@@ -17,6 +17,7 @@ var CHARCLASSES = [
     entType: 0,
     baseLevel: 1,
     baseHp: 100,
+    baseDmgMultiplier: 3,
     actionCooldownTime: 200,
     startingAmmoAmount: 100
   },
@@ -32,7 +33,8 @@ var CHARCLASSES = [
     entType: 0,
     baseLevel: 1,
     baseHp: 300,
-    actionCooldownTime: 300,
+    baseDmgMultiplier: 6, 
+    actionCooldownTime: 500,
     startingAmmoAmount: 200
   },
 
@@ -46,7 +48,8 @@ var CHARCLASSES = [
     entType: 0,
     baseLevel: 1,
     baseHp: 200,
-    actionCooldownTime: 250,
+    baseDmgMultiplier: 2,
+    actionCooldownTime: 300,
     startingAmmoAmount: 150
   },
 
