@@ -77,12 +77,59 @@ var assets = [
     type: 'image',
     src: 'assets/maps/metatiles32x32.png'
   },
+  
+  {
+    name: 'Palace',
+    type: 'image',
+    src: 'assets/maps/Palace.jpg'
+  },
+  
+  {
+    name: 'tile-floor',
+    type: 'image',
+    src: 'assets/maps/tile-floor.png'
+  },
+  
+  {
+    name: 'grass',
+    type: 'image',
+    src: 'assets/maps/grass.png'
+  },
+  
+  {
+    name: 'barricade',
+    type: 'image',
+    src: 'assets/maps/barricade.jpg'
+  },
+  
+  {
+    name: '03_wire',
+    type: 'image',
+    src: 'assets/maps/03_wire.jpg'
+  },
+  
+  {
+    name: 'tileable-tt7002066-verydark',
+    type: 'image',
+    src: 'assets/maps/tileable-tt7002066-verydark.png'
+  },
+  
+  {
+    name: 'tile_floor',
+    type: 'image',
+    src: 'assets/maps/tile_floor.png'
+  },
 
   /*
   * Levels
   */
   {
     name: 'map_01',
+    type: 'tmx',	
+    src: 'assets/maps/map_02.tmx'
+  },
+  {
+    name: 'map_02',
     type: 'tmx',	
     src: 'assets/maps/map_01.tmx'
   }
