@@ -35,14 +35,19 @@ socket.on('server tells all clients to start game', function() {
   lobby.allReady = true;
 });
 
-socket.on('a new game will be starting soon', function() {
+socket.on('a new game will be starting soon', function(map) {
   logger('Game starting soon', 1);
   lobby.nobodyReady = false;
+  game.map = map;
   setTimeout(function() {
     lobby.allReady = true;
   }, GAMECFG.timeBeforeGameStart * 1000);
 });
 
+socket.on('a game is happening', function(map) {
+  game.map = map;
+  me.state.change(me.state.PLAY);
+});
 
 socket.on('the charclass chosen is valid', function(data) {
   if (game.currentState === 0) {
@@ -58,10 +63,6 @@ socket.on('the charclass chosen is invalid', function(data) {
   alert('Invalid class');
 });
 
-socket.on('a game is happening', function() {
-   me.state.change(me.state.PLAY);
-});
-
 /*
  * Game listeners
  */
@@ -69,10 +70,11 @@ socket.on('a game is happening', function() {
 // This could happen either when this client first enters the game,
 // or is receiving a server resync
 socket.on('server sending game state', function(serverGame) {
-  logger('Server sends game state', 1);
+  logger('Server sends game state', 3);
   // Only matters if current player is in the game
   if (lobby.players[mainPlayerId].isReady) {
-    // Add players
+
+    // Add/update players
     for (var playerId in serverGame.players) {
       var serverPlayer = serverGame.players[playerId];
       var player = game.players[playerId];
@@ -84,7 +86,8 @@ socket.on('server sending game state', function(serverGame) {
         syncPlayer(player, serverPlayer);
       }
     }
-    // Add Minions
+
+    // Add/update minions
     for (var minionId in serverGame.minions) {
       // This client doesn't yet know about this minion
       var serverMinion = serverGame.minions[minionId];
@@ -95,9 +98,13 @@ socket.on('server sending game state', function(serverGame) {
         syncMinion(minion, serverMinion);
       }
     }
+
     // Set scores
-    game.score.survivors = serverGame.score.survivors;
-    game.score.director = serverGame.score.director;
+    if (typeof game.score !== 'undefined') {
+      game.score.survivors = serverGame.score.survivors;
+      game.score.director = serverGame.score.director;
+    }
+
     // Set time
     game.time.rawVal = serverGame.time;
   }
@@ -147,7 +154,10 @@ socket.on('server broadcasts that game is back to lobby state', function() {
   lobby.allReady = false;
   lobby.nobodyReady = true;
   me.state.change(me.state.LOBBY);
-  game = initGame();
+
+  for (var playerId in lobby.players) {
+    lobby.players[playerId].isReady = false;
+  }
 });
 
 socket.on('a player leveled up', function(data) {
@@ -161,6 +171,11 @@ socket.on('a player leveled up', function(data) {
       me.game.HUD.updateItemValue('charItem');
     }
   }
+});
+
+socket.on('the game has a winner', function(winner) {
+  game.winner = winner;
+  logger('Team ' + winner + ' won the game', 1);
 });
 
 /*
@@ -191,6 +206,7 @@ socket.on('a player left the game', function(id) {
  * Lobby helpers
  */
 
+// Add a new player (who arrived after the main player) into the lobby
 function addToLobby(id, name) {
   lobby.players[id] = {
     id: id,
@@ -204,6 +220,7 @@ function addToLobby(id, name) {
  * Game helpers
  */
 
+// Add a new player into the game world
 function addPlayer(serverPlayer) {
   var attrs = {};
   customMerge(attrs, serverPlayer, GAMECFG.playerFields);
@@ -224,6 +241,7 @@ function addPlayer(serverPlayer) {
   me.game.sort();
 }
 
+// Add a new minion into the game world
 function addMinion(serverMinion) {
   var attrs = {};
   customMerge(attrs, serverMinion, GAMECFG.minionFields);
@@ -236,16 +254,25 @@ function addMinion(serverMinion) {
   me.game.sort();
 }
 
+// Perform a sync for a player between client and server data
 function syncPlayer(player, serverPlayer) {
   customMerge(player, serverPlayer, GAMECFG.playerFields);
 }
 
+// Perform a sync for a minion between client and server data
 function syncMinion(minion, serverMinion) {
   minion.currHp = serverMinion.currHp;
 }
 
+// Returns true if main player is in the game playing.  False otherwise.
 function inCurrentGame() {
-  return mainPlayerId && lobby.players[mainPlayerId].isReady && game.currentState == 1;
+  var mainPlayer = lobby.players[mainPlayerId];
+  if (typeof mainPlayerId !== 'undefined' && typeof mainPlayer !== 'undefined') {
+    return mainPlayerId && lobby.players[mainPlayerId].isReady && 
+           game.currentState == 1;
+  } else {
+    return false;
+  }
 }
 
 // Handle the updates that the server sends this client about
@@ -267,18 +294,23 @@ function updatePlayer(id, updates) {
 
         // Of the update frames to skip, figure out if there are
         // any critical updates that need to be handled (like player health),
-        // as opposed to a noncritical update (player position)
+        // as opposed to a noncritical update (player movement)
         for (var index in beforeSlice) {
           player.critUpdate(beforeSlice[index]);
         }
-
+        
         player.updates = afterSlice;
         logger(player.name + ': skipped ' + sliceStart + ' frames', 3);
 
-        // Increase margin if client keeps on skipping update items
-        player.updatesMargin++;
-        player.maxUpdatesToKeep = parseInt(player.updatesMargin / GAMECFG.marginMaxUpdatesRatio, 10);
-        logger(player.name + ': margin is ' + player.updatesMargin + ', max frames is ' + player.maxUpdatesToKeep, 3);
+        // Increase margin if client keeps on skipping update items.  Stop increasing the
+        // margin when it reaches a set size
+        if (player.updatesMargin < GAMECFG.maxUpdateBufferSize) {
+          player.updatesMargin++;
+          var newMax = player.updatesMargin / GAMECFG.marginMaxUpdatesRatio;
+          player.maxUpdatesToKeep = parseInt(newMax, 10);
+          logger(player.name + ': margin is ' + player.updatesMargin + ', max frames is ' + 
+                 player.maxUpdatesToKeep, 3);
+        }
       }
     }
   }

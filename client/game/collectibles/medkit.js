@@ -14,7 +14,7 @@ var MedkitCollectible = Collectible.extend( {
     if (typeof id !== 'undefined' && id == mainPlayerId) {
       var player = game.players[mainPlayerId];
       if (typeof player !== 'undefined') {
-        var healthGained = this.amount * this.level;
+        var healthGained = this.amount * player.level;
         game.players[mainPlayerId].hpIncrease(healthGained);
         me.game.remove(this);
       }

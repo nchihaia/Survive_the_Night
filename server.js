@@ -119,8 +119,13 @@ io.sockets.on('connection', function(socket) {
         if (lobby.nobodyReady) {
           logger('Starting a new game soon', 1);
           lobby.nobodyReady = false;
-          // game.map = parseInt(Math.random() * 2, 10);
-          io.sockets.emit('a new game will be starting soon');
+
+          // Choose a random map
+          randNum = parseInt(Math.random() * GAMECFG.maps.length, 10);
+          game.pubData.map = GAMECFG.maps[randNum];
+          logger(game.pubData.map + ' will be the map for the next game', 1);
+
+          io.sockets.emit('a new game will be starting soon', game.pubData.map);
           setTimeout(function() {
             // Only start game on callback if it hasn't started during timeout time
             if (game.pubData.currentState === 0) {
@@ -134,7 +139,7 @@ io.sockets.on('connection', function(socket) {
           startGame();
         }
       } else {
-        socket.emit('a game is happening');
+        socket.emit('a game is happening', game.pubData.map);
       }
     }
   });
@@ -200,7 +205,7 @@ io.sockets.on('connection', function(socket) {
     deletePlayer(socket);
   });
 
-  // Clients can't directly emit 'disconnect
+  // Clients can't directly emit 'disconnect'
   socket.on('this client leaves the game', function() {
     deletePlayer(socket);
   });
@@ -252,14 +257,15 @@ setInterval(periodicPrint, GAMECFG.periodicPrint * 1000);
 
 function initGame() {
   return {
+
     pubData: {
       // States:
       // 0 - In lobby, forming teams
       // 1 - Playing game
       currentState: 0,
-      maps: ['map_01', 'map_02'],
-      map: 'map_01',
+      map: GAMECFG.maps[0],
       time: GAMECFG.startingTime,
+      winner: undefined,
       score: {
         survivors: 0,
         director: 0
@@ -269,14 +275,15 @@ function initGame() {
       // id (key), minionType, producerId, posX, posY, maxHp, currHp
       minions: {}
     },
+
     privData: {
       updateNum: 0,
+      updates: initGameUpdates(),
       intervals: {
         sendUpdateId: undefined,
         incrementTimeId: undefined,
         sendSyncId: undefined
-      },
-      updates: initGameUpdates()
+      }
     }
   };
 }
@@ -360,6 +367,7 @@ function startGame() {
       game.privData.intervals.sendSyncId = setInterval(sendSync, 60000 * GAMECFG.serverSyncInterval);
     }
   }, 60000 * GAMECFG.minutesBeforeFirstSync);
+
   io.sockets.emit('server tells all clients to start game');
 }
 
@@ -410,6 +418,7 @@ function switchToLobbyState() {
   // Everyone still connected is now back in the lobby
   game = initGame();
   lobby.nobodyReady = true;
+  // Tell clients about the state change
   io.sockets.emit('server broadcasts that game is back to lobby state');
 }
 
@@ -466,10 +475,10 @@ function parseSurvivorUpdate(survivor, updateItem) {
   }
 }
 
-// Should not be doin any kind of damage variable calculation (let client handle that)
+// Should not be doing any kind of damage variable calculation (let client handle that)
 function calcAttack(attacker, target, damage) {
   if (typeof attacker !== 'undefined' && typeof target !== 'undefined' && 
-      typeof damage !== 'undefined') {
+      typeof damage === 'number') {
     logger(attacker.name + ' hits ' + target.name + ' for ' + damage + ' damage', 2);
     target.currHp -= damage;
     if (target.currHp <= 0) {
@@ -477,21 +486,24 @@ function calcAttack(attacker, target, damage) {
 
       // Give points to either the survivors or the director
       if (typeof attacker.entType !== 'undefined') {
-        // Points to survivors
+
         if (attacker.entType == ENTTYPES.SURVIVOR) {
+          // Points to survivors
           if (typeof target.minionType !== 'undefined') {
             game.pubData.score.survivors += MINIONTYPES[target.minionType].points;
             logger('The survivors now have ' + game.pubData.score.survivors + ' points', 2);
+            delFromGame(target);
           }
-        } else if (typeof target.level !== 'undefined') {
+
+        } else if (attacker.entType == ENTTYPES.ENEMY && typeof target.level !== 'undefined') {
           // Points to director
           game.pubData.score.director += (target.level * 25);
           logger('The director now has ' + game.pubData.score.director + ' points', 2);
+          // The target (a survivor) automatically respawns
           target.currHp = target.maxHp;
         }
       }
-
-      delFromGame(target);
+      handleWinner();
     }
     return true;
   } else {
@@ -533,8 +545,29 @@ function handleLevelUp(survivor) {
   }
 }
 
+// An entity was healed for some amount of hp
 function hpIncrease(entity, amount) {
   var newHp = entity.currHp + amount;
   entity.currHp = Math.min(newHp, entity.maxHp);
   logger(entity.name + ' is healed for ' + amount + ' hp', 2);
+}
+
+// See if someone has won the game
+function handleWinner() {
+  if (typeof game.pubData.winner === 'undefined' && 
+      (game.pubData.score.survivors >= GAMECFG.pointsToWin ||
+       game.pubData.score.director >= GAMECFG.pointsToWin)) {
+
+    if (game.pubData.score.survivors >= GAMECFG.pointsToWin) {
+      game.pubData.winner = ENTTYPES.SURVIVOR;
+    } else if (game.pubData.score.director >= GAMECFG.pointsToWin) {
+      game.pubData.winner = ENTTYPES.ENEMY;
+    }
+    
+    logger('Team ' + game.pubData.winner + ' won the game', 1);
+    io.sockets.emit('the game has a winner', game.pubData.winner);
+    setTimeout(function() {
+      switchToLobbyState();
+    }, GAMECFG.timeAfterWinToSwitch * 1000);
+  }
 }

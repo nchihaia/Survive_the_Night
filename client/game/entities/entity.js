@@ -2,6 +2,7 @@ var Entity = me.ObjectEntity.extend( {
 
   init: function(x, y, settings) {
     this.parent(x, y, settings);
+    this.setFriction(0.7, 0.7);
     this.actionOnCooldown = false;
   },
 
@@ -44,7 +45,8 @@ var Entity = me.ObjectEntity.extend( {
     context.fillStyle = 'black';
     context.fillText(currHp + ' / ' + this.maxHp, (this.left + this.right) / 2, yPos);
   },
-
+  
+  // Draw name and level (if this entity has a level)
   drawBasicInfo: function(context, yPos) {
     if (typeof yPos === 'undefined') {
       yPos = this.top;
@@ -73,14 +75,16 @@ var Entity = me.ObjectEntity.extend( {
 
     return summonedEntity;
   },
-
+  
+  // True if obj passed is standing still.
   standingStill: function(obj) {
     if (typeof obj === 'undefined') {
       obj = this;
     }
     return obj.vel.x === 0 && obj.vel.y === 0;
   },
-
+  
+  // Calculate the damage of an attack by this entity on a target
   calcDamage: function(target, attack) {
     if (typeof target !== 'undefined' && target.alive) {
       // Damage of an attack is the attack's damage times the attacker's damage
@@ -93,8 +97,10 @@ var Entity = me.ObjectEntity.extend( {
       if (this.id == mainPlayerId || target.id == mainPlayerId) {
         var isNighttime = game.time.isNighttime();
 
-        // Double damage for minions at night; double damage for survivors in the daytime
-        if ((isNighttime && this.isMinion) || (!isNighttime && this.entType == ENTTYPES.SURVIVOR)) {
+        // Double damage for minions at night; double damage for survivors 
+        // in the daytime
+        if ((isNighttime && this.isMinion) || (!isNighttime && 
+             this.entType == ENTTYPES.SURVIVOR)) {
           // Double damage for minions at night
           damage *= 2;
         } 
@@ -105,30 +111,37 @@ var Entity = me.ObjectEntity.extend( {
     }
   },
 
-  performAttack: function(entity, attack) {
-    if (typeof entity !== 'undefined') {
-      var damage = this.calcDamage(entity, attack);
-      entity.currHp -= damage;
-      logger(this.name + ' hits ' + entity.name + ' for ' + damage + ' damage', 2);
+  performAttack: function(target, attack) {
+    if (typeof target !== 'undefined') {
+      var damage = this.calcDamage(target, attack);
+      // Make sure damage is a number (make it 0 if it isn't for some reason)
+      if (typeof damage !== 'number') {
+        damage = 0;
+      }
 
-      if (entity.currHp <= 0) {
-        entity.slayer = this;
-        if (entity.entType == ENTTYPES.ENEMY) {
-          if (entity.alive) {
-            entity.alive = false;
-            entity.flicker(20, function() {
-              delFromGame(entity);
+      target.currHp -= damage;
+      logger(this.name + ' hits ' + target.name + ' for ' + damage + ' damage', 2);
+      
+      // If target has no more hp
+      if (target.currHp <= 0) {
+        target.slayer = this;
+        if (target.entType == ENTTYPES.ENEMY) {
+          // If target is the director or a minion, award points to the survivors
+          if (target.alive) {
+            target.alive = false;
+            target.flicker(20, function() {
+              delFromGame(target);
             });
           }
         } else {
+          // Else, target is a survivor, so the director gets the points
           if (typeof game.score !== 'undefined') {
-            game.score.director += (this.level * 25);
+            game.score.director += (target.level * 25);
             me.game.HUD.updateItemValue('scoreItem');
-            if (entity.id == mainPlayerId) {
-              entity.pos.x = GAMECFG.survivorStartingXPos;
-              entity.pos.y = GAMECFG.survivorStartingYPos;
-              entity.currHp = entity.maxHp;
-            }
+            // Respawn survivor at the starting point
+            target.pos.x = GAMECFG.survivorStartingXPos;
+            target.pos.y = GAMECFG.survivorStartingYPos;
+            target.currHp = target.maxHp;
           }
         }
       }
@@ -137,7 +150,8 @@ var Entity = me.ObjectEntity.extend( {
       return false;
     }
   },
-
+  
+  // This entity drops an item (like a medkit)
   dropItem: function(item, pos) {
     // If no position, drop the item where the entity is standing
     pos = pos || {

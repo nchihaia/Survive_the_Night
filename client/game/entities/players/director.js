@@ -64,6 +64,7 @@ var OtherDirectorEntity = OtherPlayerEntity.extend( {
           var minionThatAttacks = findEntityById(minionTarget.minionId);
           var targetOfMinion = findEntityById(minionTarget.targetId);
           if (typeof minionThatAttacks !== 'undefined' && typeof targetOfMinion !== 'undefined') {
+            logger(minionThatAttacks.name + ' chooses ' + targetOfMinion.name + ' as the target', 2);
             minionThatAttacks.target = targetOfMinion;
           }
         }

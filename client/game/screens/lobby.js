@@ -187,8 +187,15 @@ LobbyScreen = me.ScreenObject.extend( {
           text = 'Choose your class then press ENTER to ready up';
         }
       } else if (game.currentState == 1) {
-        // For when a game is in progress and the client is joining in
-        text = 'A game is in progress! Choose a class then press ENTER to join';
+        if (typeof mainPlayerId !== 'undefined') {
+          var mainPlayer = lobby.players[mainPlayerId];
+          if (typeof mainPlayer !== 'undefined' && mainPlayer.isReady) {
+            text = 'Loading map...';
+          } else {
+            // For when a game is in progress and the client is joining in
+            text = 'A game is in progress! Choose a class then press ENTER to join';
+          }
+        }
       }
       context.fillText(text, this.xCenter, yPos);
 

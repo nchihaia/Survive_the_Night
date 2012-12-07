@@ -1,25 +1,25 @@
-var target;
 var MinionEntity = PathfindingEntity.extend( {
 
   init: function(producer, attrs) {
     settings = {};
     settings.image = MINIONTYPES[attrs.minionType].sprite;
-    settings.spritewidth = 32;
+    settings.spritewidth = 39;
     settings.spriteheight = 48;
     this.parent(0, 0, settings);
 
     this.defaultAnimationSet();
-
     this.collidable = true;
-    this.setVelocity(7, 7);
-    this.setFriction(0.7, 0.7);
-    this.setMaxVelocity(10, 10);
-    this.target = this.producer;
+    
+    var speed = MINIONTYPES[attrs.minionType].speed;
+    var maxSpeed = MINIONTYPES[attrs.minionType].maxSpeed;
+    this.setVelocity(speed, speed);
+    this.setMaxVelocity(maxSpeed, maxSpeed);
 
     customMerge(this, attrs, GAMECFG.minionFields);
     this.pos.x = attrs.posX || producer.pos.x;
     this.pos.y = attrs.posY || producer.pos.y;
     this.producer = producer;
+    this.target = producer;
     this.entType = MINIONTYPES[attrs.minionType].entType;
     this.damage = MINIONTYPES[attrs.minionType].damage;
     this.dmgMultiplier = 1;
@@ -27,7 +27,8 @@ var MinionEntity = PathfindingEntity.extend( {
     this.isMinion = true;
 
     // Set Hp.  This value could come from some attribute set on the server side or
-    // a default value from the config if no value is passed through attrs
+    // a default value from the config if no value is passed through attrs (like when
+    // a client enters a game in progress)
     if (typeof this.maxHp === 'undefined') {
       this.maxHp = MINIONTYPES[attrs.minionType].baseHp;
     }
@@ -46,11 +47,27 @@ var MinionEntity = PathfindingEntity.extend( {
   },
 
   update: function() {
-    // Pick a random survivor to attack
-    if(this.target == undefined)
-        {this.target = this.producer;}
-    this.findTarget();
+    // Periodically update this minion's target to the closest survivor
+    // by proximity.  Only the director handles this.
+    var mainPlayer = game.players[mainPlayerId];
+    if (typeof mainPlayer !== 'undefined' && mainPlayer.charclass == CHARCLASS.DIRECTOR &&
+      me.timer.getTime() % 100 === 0) {
+        var oldTarget = this.target;
+        this.findTarget();
+        // Update the server if the target has changed
+        if (typeof this.target !== 'undefined' && oldTarget != this.target) {
+          mainPlayer.newActions.minionTargets = mainPlayer.newActions.minionTargets || [];
+          mainPlayer.newActions.minionTargets.push({
+            minionId: this.id,
+            targetId: this.target.id
+          });
+        }
+      }
+    
+    // Have the minion navigate to its designated target
+    if (typeof this.target !== 'undefined') {
       this.findPath(this.target.pos.x, this.target.pos.y);
+    }
 
     this.parent(this);
     return true;
@@ -90,7 +107,8 @@ var MinionEntity = PathfindingEntity.extend( {
       }
     }
   },
-
+  
+  // Minion executes the attack
   performAbility: function(target, ability) {
     if (typeof ability === 'undefined') {
       ability = { damage: this.damage };
@@ -98,21 +116,44 @@ var MinionEntity = PathfindingEntity.extend( {
     var damage = this.performAttack(target, ability);
     return damage;
   },
-
+  
+  // Attack hits for damage
   performAttack: function(target, attack) {
     var damage = this.parent(target, attack);
     return damage;
   },
-  findTarget: function()
-  {
-      if(!this.target.alive)
-          {this.target = this.producer;}
-    var gameObj = game.pubData || game;
-    for (var playerId in gameObj.players)
-        {
-           var closest = gameObj.players[playerId];
-           if((this.distanceTo(closest) < this.distanceTo(this.target) && closest.entType == 0 && closest.alive) || this.target.pos == this.producer.pos)
-               {this.target = closest;}
+  
+  // Find and set the minion's target to the survivor
+  // that the minion is closest to
+  findTarget: function() {
+    var closest;
+    var closestDistance;
+    for (var playerId in game.players) {
+      var player = game.players[playerId];
+      if (typeof player !== 'undefined' && player.alive &&
+          player.entType == ENTTYPES.SURVIVOR) {
+        var playerDistance = this.distanceTo(player);
+        // Set closest to be this player if no player has been declared closest yet
+        if (typeof closest === 'undefined') {
+          closest = player;
+          closestDistance = playerDistance;
+        } else {
+          // Set player to be closest if their playerDistance is less
+          if (playerDistance < closestDistance) {
+            closest = player;
+            closestDistance = playerDistance;
+          }
         }
+      }
+    }
+    // If closest is undefined, default to producer
+    if (typeof closest === 'undefined') {
+      closest = this.producer;
+    }
+
+    if (typeof this.target !== 'undefined' && this.target != closest) {
+      logger(this.name + ' chooses ' + this.target.name + ' as the new target', 2);
+    }
+    this.target = closest;
   }
 });

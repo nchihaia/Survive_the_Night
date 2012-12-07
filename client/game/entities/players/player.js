@@ -16,7 +16,6 @@ var PlayerEntity = Entity.extend( {
     // Movements settings for this entity.  Look at melonjs docs for more
     // info, but the names of these settings should be relatively self-explanatory
     this.setVelocity(5, 5);
-    this.setFriction(0.7, 0.7);
     this.collidable = true;
     
     // Merge attrs fields into this entity

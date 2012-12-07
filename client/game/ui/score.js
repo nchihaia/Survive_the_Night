@@ -25,6 +25,20 @@ var ScoreItem = me.HUD_Item.extend( {
     context.fillStyle = '#d53533';
     context.fillText(directorScore, this.pos.x + 30, this.pos.y);
 
+    if (typeof game.winner !== 'undefined') {
+      var winText;
+      if (game.winner == ENTTYPES.SURVIVOR) {
+        winText = 'SURVIVORS WIN';
+      } else if (game.winner == ENTTYPES.ENEMY) {
+        winText = 'DIRECTOR WINS';
+      }
+      
+      context.font = 'bold 100px Oswald';
+      context.textAlign = 'center';
+      context.fillStyle = '#402466';
+      context.fillText(winText, me.video.getWidth() / 2, me.video.getHeight() / 2);
+    }
+
     this.parent(context, x, y);
   }
 });

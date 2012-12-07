@@ -26,11 +26,12 @@ function initGame() {
     // 0 - In lobby, forming teams
     // 1 - Playing game
     currentState: 0,
-    map: 'map_01',
+    winner: undefined,
     time: undefined,
     score: undefined,
     charDisplay: undefined,
     updatenum: undefined,
+    map: GAMECFG.maps[0],
     numPacketsLost: 0,
     players: {},
     minions: {}

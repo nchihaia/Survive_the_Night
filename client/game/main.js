@@ -46,11 +46,12 @@ window.onReady(function() {
   surviveTheNight.onload();
 });
 
-// If the user exists the page, tell the server that they have disconnected
-// This isn't triggered when the client refreshes the page though (would need to
-// uncomment the return).
+// If the user exists the page, tell the server that they have disconnected.
+// However (at least on Chrome), the disconnect isn't triggered when the clicks the
+// back button.
 window.onbeforeunload = function() {
   socket.emit('this client leaves the game');
-  // Hide dialog box if there is no return
-  // return true;
+  return 'You have been disconnected from the game.  Cancelling this dialog' +
+          ' box will NOT cancel the disconnection (instead navigate to this webpage' +
+          ' again to rejoin).';
 };
