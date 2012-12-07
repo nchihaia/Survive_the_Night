@@ -3,8 +3,8 @@ var MinionEntity = PathfindingEntity.extend( {
   init: function(producer, attrs) {
     settings = {};
     settings.image = MINIONTYPES[attrs.minionType].sprite;
-    settings.spritewidth = 39;
-    settings.spriteheight = 48;
+    settings.spritewidth = MINIONTYPES[attrs.minionType].spriteWidth;
+    settings.spriteheight = MINIONTYPES[attrs.minionType].spriteHeight;
     this.parent(0, 0, settings);
 
     this.defaultAnimationSet();
@@ -51,7 +51,7 @@ var MinionEntity = PathfindingEntity.extend( {
     // by proximity.  Only the director handles this.
     var mainPlayer = game.players[mainPlayerId];
     if (typeof mainPlayer !== 'undefined' && mainPlayer.charclass == CHARCLASS.DIRECTOR &&
-      me.timer.getTime() % 100 === 0) {
+      me.timer.getTime() % 50 === 0) {
         var oldTarget = this.target;
         this.findTarget();
         // Update the server if the target has changed

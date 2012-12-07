@@ -9,8 +9,12 @@ var MainDirectorEntity = MainPlayerEntity.extend( {
     var n = key;
     switch(n)
     {
-        case "D": {this.summonBasic();break;}
-        case "F": {this.summonSuper();break;}
+        case "D": 
+          this.summonBasic();
+          break;
+        case "F": 
+          this.summonSuper();
+          break;
     }
     return 0;
   },
@@ -65,7 +69,8 @@ var OtherDirectorEntity = OtherPlayerEntity.extend( {
 
   critUpdate: function(updateItem) {
     if (typeof updateItem !== 'undefined') {
-
+      
+      // Director summoned a minion
       if (typeof updateItem.summonedMinions !== 'undefined') {
         var minion = updateItem.summonedMinions[0];
         logger(this.name + ' summoned a minion at ' + minion.posX + ', ' + minion.posY, 2);
@@ -77,7 +82,8 @@ var OtherDirectorEntity = OtherPlayerEntity.extend( {
         });
         game.minions[minion.id] = minion;
       }
-
+      
+      // Director's minion(s) changed their targets
       if (typeof updateItem.minionTargets !== 'undefined') {
         for (var i=0; i < updateItem.minionTargets.length; i++) {
           var minionTarget = updateItem.minionTargets[i];
