@@ -26,11 +26,14 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
     this.parent();
     return true;
   },
-  
-  // Perform the survivor's ability (fire a gun)
-  performAbility: function() {
-    this.shoot(BulletProjectile);
-    this.newActions.shotWeapon = true;
+
+  performAbility: function(garbage, key) {
+    var n = key;
+    switch(n)
+    {
+        case "D":  this.ability1(); break;
+        case "F":  this.ability2(); break;
+    }
     return 0;
   },
   
@@ -44,6 +47,28 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
       entityId: entity.id
     });
     return damage;
+  },
+  ability1: function()
+  {
+    this.shoot(BulletProjectile);
+    this.newActions.shotWeapon = true;
+  },
+  ability2: function()
+  {
+      var n = this.charclass;
+      switch(n)
+      {
+          case CHARCLASS.SUPPORT: this.healClose();break;
+      }
+  },
+  healClose: function(){
+       for (var playerId in game.players){
+           var n = game.players[playerId];
+           if(this.distanceTo(n)<=40 && n.entType == ENTTYPES.SURVIVOR)
+               {n.hpIncrease(10);}
+       }
+   this.hpIncrease(10);
+   this.ammoCount-=12;
   }
 });
 
