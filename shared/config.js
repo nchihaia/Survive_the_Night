@@ -38,6 +38,10 @@ var GAMECFG = {
   // The mininum of max opacity for the color layer representing day and night
   minLightOpacity: 0,
   maxLightOpacity: 0.75,
+  
+  // The amount of ammo cost to perform an ability
+  basicAttackAmmoCost: 1,
+  specialAttackAmmoCost: 20, 
 
   // Whether or not to have only 1 director
   directorClassRestrict: false,

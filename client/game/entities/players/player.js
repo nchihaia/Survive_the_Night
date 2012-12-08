@@ -85,19 +85,19 @@ var MainPlayerEntity = PlayerEntity.extend( {
      */
     if (me.input.isKeyPressed('action')) {
       // Only do action if there are enough ammo and not on "cooldown"
-    if (this.ammoCount > 0) {
+    if (this.ammoCount >= GAMECFG.basicAttackAmmoCost) {
         var canPerform = this.attemptAbility("blah", "D");
         if (typeof canPerform === 'number') {
-          this.ammoCount--;
+          this.ammoCount -= GAMECFG.basicAttackAmmoCost;
          me.game.HUD.updateItemValue('charItem');
         }
       }
     }
     if(me.input.isKeyPressed('action2')) {
-        if(this.ammoCount > 3) {
+        if(this.ammoCount >= GAMECFG.specialAttackAmmoCost) {
            var canPerform2 = this.attemptAbility("blah", "F");
             if(typeof canPerform2 === 'number'){
-                this.ammoCount-=3;
+                this.ammoCount -= GAMECFG.specialAttackAmmoCost;
             }
             me.game.HUD.updateItemValue('charItem');
         }

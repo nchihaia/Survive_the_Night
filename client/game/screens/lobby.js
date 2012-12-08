@@ -12,7 +12,8 @@ LobbyScreen = me.ScreenObject.extend( {
     this.xCenter = me.video.getWidth() / 2;
 
     // init/re-init player
-    if (lobby.players[mainPlayerId]) {
+    if (typeof mainPlayerId !== 'undefined' && 
+    typeof lobby.players[mainPlayerId] !== 'undefined') {
       lobby.players[mainPlayerId].isReady = false;
     }
 

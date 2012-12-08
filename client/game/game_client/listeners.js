@@ -72,7 +72,7 @@ socket.on('the charclass chosen is invalid', function(data) {
 socket.on('server sending game state', function(serverGame) {
   logger('Server sends game state', 3);
   // Only matters if current player is in the game
-  if (lobby.players[mainPlayerId].isReady) {
+  if (typeof mainPlayerId !== 'undefined' && lobby.players[mainPlayerId].inGame) {
 
     // Add/update players
     for (var playerId in serverGame.players) {
@@ -89,13 +89,35 @@ socket.on('server sending game state', function(serverGame) {
 
     // Add/update minions
     for (var minionId in serverGame.minions) {
-      // This client doesn't yet know about this minion
       var serverMinion = serverGame.minions[minionId];
       var minion = game.minions[minionId];
       if (typeof minion === 'undefined') {
+        // This client doesn't yet know about this minion
         addMinion(serverGame.minions[minionId]);
       } else {
+        // This minion already exists in the game world, so just sync its stats
         syncMinion(minion, serverMinion);
+      }
+    }
+
+    // See if there are any minions existing in the client's world
+    // that doesn't exist for the server.  It is likely that the minion has
+    // already been removed from the game world.
+    for (minionId in game.minions) {
+      var gameMinion = game.minions[minionId];
+      if (typeof serverGame.minions[minionId] === 'undefined') {
+        // Only possible way minion shouldn't be removed is if the main player is
+        // the director and the minion was summoned within a few seconds (the client
+        // hasn't had the chance to tell the server about the summoned minion yet)
+        var mainPlayer = game.players[mainPlayerId];
+        if (typeof mainPlayer !== 'undefined' && 
+              mainPlayer.charclass == CHARCLASS.DIRECTOR &&
+              me.timer.getTime() - gameMinion.summonedTime < 5000) {
+          logger('Leaving ' + gameMinion.name + ' in the game world', 2);
+        } else {
+          logger('Removing ' + gameMinion.name + ' from the game world', 2);
+          delFromGame(gameMinion);
+        }
       }
     }
 

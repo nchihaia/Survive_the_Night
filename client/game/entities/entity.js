@@ -182,14 +182,20 @@ var Entity = me.ObjectEntity.extend( {
     }
   },
 
-  // Increase this entity's hp by the amount given
-  hpIncrease: function(amount) {
-    var newHp = this.currHp + amount;
-    this.currHp = Math.min(newHp, this.maxHp);
+  // Increase the target's hp by the amount given.  This is called by the healer.
+  hpIncrease: function(target, amount) {
+    logger(this.name + ' heals ' + target.name + ' for ' + amount, 2);
+    var newHp = target.currHp + amount;
+    target.currHp = Math.min(newHp, target.maxHp);
     me.game.HUD.updateItemValue('charItem');
+
+    // If this entity is the main player, tell the server about the hp increase
     if (typeof this.newActions !== 'undefined') {
       this.newActions.hpIncreases = this.newActions.hpIncreases || [];
-      this.newActions.hpIncreases.push(amount);
+      this.newActions.hpIncreases.push({
+        targetId: target.id,
+        amount: amount
+      });
     }
   }
 });

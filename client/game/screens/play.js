@@ -42,6 +42,13 @@ var PlayScreen = me.ScreenObject.extend( {
     // Add main player
     addMainPlayer();
 
+    if (typeof mainPlayerId !== 'undefined') {
+      var mainPlayer = lobby.players[mainPlayerId];
+      if (typeof mainPlayer !== 'undefined') {
+        mainPlayer.inGame = true;
+      }
+    }
+
     game.currentState = 1;
     socket.emit('this client is in the game');
   },
@@ -77,6 +84,13 @@ var PlayScreen = me.ScreenObject.extend( {
 
     if (typeof game.charItem !== 'undefined') {
       me.game.HUD.removeItem('charItem');
+    }
+
+    if (typeof mainPlayerId !== 'undefined') {
+      var mainPlayer = lobby.players[mainPlayerId];
+      if (typeof mainPlayer !== 'undefined') {
+        mainPlayer.inGame = false;
+      }
     }
   },
 

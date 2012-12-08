@@ -25,6 +25,7 @@ var MinionEntity = PathfindingEntity.extend( {
     this.dmgMultiplier = 1;
     this.actionCooldownTime = MINIONTYPES[attrs.minionType].actionCooldownTime;
     this.isMinion = true;
+    this.summonedTime = me.timer.getTime();
 
     // Set Hp.  This value could come from some attribute set on the server side or
     // a default value from the config if no value is passed through attrs (like when

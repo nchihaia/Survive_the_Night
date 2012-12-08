@@ -61,14 +61,16 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
           case CHARCLASS.SUPPORT: this.healClose();break;
       }
   },
+
+  // hpIncrease is now called by the healer and has two arguments:
+  //  - the entity to heal
+  //  - the amount to heal
   healClose: function(){
        for (var playerId in game.players){
            var n = game.players[playerId];
            if(this.distanceTo(n)<=40 && n.entType == ENTTYPES.SURVIVOR)
-               {n.hpIncrease(10);}
+               {this.hpIncrease(n, 10);}
        }
-   this.hpIncrease(10);
-   this.ammoCount-=12;
   }
 });
 
@@ -119,11 +121,15 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
         }
       }
 
-      // This player gained health
+      // This player healed self or somebody else
       if (typeof updateItem.hpIncreases !== 'undefined') {
         for (var k=0; k < updateItem.hpIncreases.length; k++) {
-          var amount = updateItem.hpIncreases[k];
-          this.hpIncrease(amount);
+          var hpIncreaseItem = updateItem.hpIncreases[k];
+          var targetToHeal = game.players[hpIncreaseItem.targetId];
+          var amount = hpIncreaseItem.amount;
+          if (typeof targetToHeal !== 'undefined' && typeof amount !== 'undefined') {
+            this.hpIncrease(targetToHeal, amount);
+          }
         }
       }
     }

@@ -455,7 +455,7 @@ function parseSurvivorUpdate(survivor, updateItem) {
     }
   }
 
-  // Player was attacked by an enmey
+  // Player was attacked by an enemy
   var wasAttacked = updateItem.wasAttacked;
   if (typeof wasAttacked !== 'undefined' && Array.isArray(wasAttacked)) {
     for (var j=0; j < wasAttacked.length; j++) {
@@ -469,8 +469,12 @@ function parseSurvivorUpdate(survivor, updateItem) {
   var hpIncreases = updateItem.hpIncreases; 
   if (typeof hpIncreases !== 'undefined' && Array.isArray(hpIncreases)) {
     for (var k=0; k < updateItem.hpIncreases.length; k++) {
-      var amount = updateItem.hpIncreases[k];
-      hpIncrease(survivor, amount);
+      var hpIncreaseItem = updateItem.hpIncreases[k];
+      var targetToHeal = game.pubData.players[hpIncreaseItem.targetId];
+      var amount = hpIncreaseItem.amount;
+      if (typeof targetToHeal !== 'undefined' && typeof amount !== 'undefined') {
+        hpIncrease(targetToHeal, amount);
+      }
     }
   }
 }
