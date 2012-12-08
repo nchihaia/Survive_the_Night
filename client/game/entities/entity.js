@@ -4,6 +4,9 @@ var Entity = me.ObjectEntity.extend( {
     this.parent(x, y, settings);
     this.setFriction(0.7, 0.7);
     this.actionOnCooldown = false;
+    
+    // Damage and heal queue for drawing purposes
+    this.hpDeltas = [];
   },
 
   defaultAnimationSet: function() {
@@ -34,6 +37,56 @@ var Entity = me.ObjectEntity.extend( {
     this.parent(this);
   },
 
+  draw: function(context) {
+    this.drawHpDelta(context);
+    this.parent(context);
+  },
+  
+  // Draw hp damage done and heals done to this entity
+  drawHpDelta: function(context) {
+    for (var i=0; i < this.hpDeltas.length; i++) {
+      var hpDelta = this.hpDeltas[i];
+
+      if (typeof hpDelta.yPosDiff === 'undefined') {
+        // Negative delta is damage taken, positive is heal
+        if (hpDelta.delta <= 0) {
+          hpDelta.fillStyle = 'red';
+          hpDelta.deltaDisplay =  hpDelta.delta;
+        } else {
+          hpDelta.fillStyle = 'green';
+          hpDelta.deltaDisplay = '+' + hpDelta.delta;
+        }
+        // Account for crit
+        if (hpDelta.crit) {
+          hpDelta.deltaDisplay = 'Crit ' + hpDelta.deltaDisplay;
+        }
+
+        // Init numbers to tween
+        hpDelta.xPosDiff = -15;
+        hpDelta.yPosDiff = -15;
+        
+        // Start the tween
+        var thisObj = this;
+        var tween = new me.Tween(hpDelta)
+        .to({ xPosDiff: 20, yPosDiff: 20 }, 400)
+        .onComplete(function() {
+          thisObj.hpDeltas.shift();
+        });
+
+        tween.easing(me.Tween.Easing.Quadratic.EaseInOut);
+        tween.start();
+      }
+
+      context.font = 'bold 12px Oswald';
+      context.textAlign = 'left';
+      context.fillStyle = hpDelta.fillStyle;
+      var xPos = this.right + hpDelta.xPosDiff;
+      var yPos = this.top - hpDelta.yPosDiff;
+      context.fillText(hpDelta.deltaDisplay, xPos, yPos);
+    }
+  },
+  
+  // Draw HP above entity
   drawHp: function(context, yPos) {
     if (typeof yPos === 'undefined') {
       yPos = this.top;
@@ -67,7 +120,8 @@ var Entity = me.ObjectEntity.extend( {
     me.game.add(new projectile(this), 2);
     me.game.sort();
   },
-
+  
+  // Have this entity summon another entity
   summon: function(EntityToSummon, attrs) {
     var summonedEntity = new EntityToSummon(this, attrs);
     me.game.add(summonedEntity, 2);
@@ -97,28 +151,49 @@ var Entity = me.ObjectEntity.extend( {
       if (this.id == mainPlayerId || target.id == mainPlayerId) {
         var isNighttime = game.time.isNighttime();
 
-        // Double damage for minions at night; double damage for survivors 
+        // Quadruple damage for minions at night; double damage for survivors 
         // in the daytime
-        if ((isNighttime && this.isMinion) || (!isNighttime && 
-             this.entType == ENTTYPES.SURVIVOR)) {
-          // Double damage for minions at night
+        if (isNighttime && this.isMinion) {
+          damage *= 4;
+        } else if (!isNighttime && this.entType == ENTTYPES.SURVIVOR) {
           damage *= 2;
-        } 
+        }
       }
-      return damage;
+      // Factor in critical hits
+      var crit = false;
+      if (typeof this.critChance === 'number') {
+        if (Math.random() <= this.critChance) {
+          crit = true;
+          damage *= 2;
+        }
+      }
+      return [damage, crit];
     } else {
       return 0;
     }
   },
 
-  performAttack: function(target, attack) {
+  performAttack: function(target, attack, damage, crit) {
     if (typeof target !== 'undefined') {
-      var damage = this.calcDamage(target, attack);
+      // Only perform damage calculation if the damage wasn't passed
+      // as an argument
+      if (typeof damage !== 'number' || typeof crit !== 'boolean') {
+        var damageItem = this.calcDamage(target, attack);
+        damage = damageItem[0];
+        crit = damageItem[1];
+      }
       // Make sure damage is a number (make it 0 if it isn't for some reason)
       if (typeof damage !== 'number') {
         damage = 0;
       }
 
+      // Push the damage amount onto the hpDelta queue for visual display
+      target.hpDeltas.push({ 
+        delta: 0 - damage,
+        crit: crit
+      });
+
+      // Calculate new hp
       target.currHp -= damage;
       logger(this.name + ' hits ' + target.name + ' for ' + damage + ' damage', 2);
       
@@ -142,12 +217,22 @@ var Entity = me.ObjectEntity.extend( {
             target.pos.x = GAMECFG.survivorStartingXPos;
             target.pos.y = GAMECFG.survivorStartingYPos;
             target.currHp = target.maxHp;
+            // Display message if target was the main player
+            if (target.id === mainPlayerId) {
+              game.score.respawned = 2;
+            }
           }
         }
       }
-      return damage;
+
+      // Make target flicker
+      if (damage > 0 && !target.isFlickering()) {
+        target.flicker(2);
+      }
+
+      return [damage, crit];
     } else {
-      return false;
+      return [false, false];
     }
   },
   
@@ -167,7 +252,7 @@ var Entity = me.ObjectEntity.extend( {
   attemptAbility: function(targetEntity, ability) {
     if (!this.actionOnCooldown) {
       // Do the ability
-      var damage = this.performAbility(targetEntity, ability);
+      var damageItem = this.performAbility(targetEntity, ability);
 
       // Set the new cooldown
       this.actionOnCooldown = true;
@@ -175,10 +260,10 @@ var Entity = me.ObjectEntity.extend( {
       setTimeout(function() {
         thisObj.actionOnCooldown = false;
       }, this.actionCooldownTime);
-      return damage;
+      return damageItem;
 
     } else {
-      return false;
+      return [false, false];
     }
   },
 
@@ -197,5 +282,8 @@ var Entity = me.ObjectEntity.extend( {
         amount: amount
       });
     }
+
+    // Record the amount for display
+    target.hpDeltas.push({ delta: amount });
   }
 });

@@ -24,7 +24,7 @@ var CharItem = me.HUD_Item.extend( {
       yPos += 25;
       context.fillStyle = '#0a0e02';
       context.font = 'bold 20px Droid Sans';
-      context.fillText(player.currHp + ' / ' + player.maxHp, this.pos.x, this.pos.y + yPos);
+      context.fillText('HP: ' + player.currHp + ' / ' + player.maxHp, this.pos.x, this.pos.y + yPos);
 
       // Ammo
       yPos += 25;

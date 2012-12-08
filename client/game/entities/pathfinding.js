@@ -968,8 +968,13 @@ goAround: function() {
                                   }                          
                       }
           }
-          if(blocked)
-          {this.nextX = dealie.right;this.blockHoriz = dealie;}
+          if(blocked) {
+            // Added this in because game was locking up
+            if (dealie !== null) {
+              this.nextX = dealie.right;
+            }
+            this.blockHoriz = dealie;
+          }
           else
               {this.nextX = this.destX;}
           return blocked;

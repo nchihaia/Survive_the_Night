@@ -110,20 +110,20 @@ LobbyScreen = me.ScreenObject.extend( {
       context.fillText(context, 'Establishing connection with game server...', this.xCenter, 200);
     } else {
       var yPos = 40;
+      context.textAlign = 'center';
 
       /*
       * Title
       */
-      context.font = 'bold 40px Jolly Lodger';
-      context.textAlign = 'center';
-      context.fillStyle = '#301b4c';
-      context.fillText('SURVIVE THE NIGHT', this.xCenter, yPos);
+      // context.font = 'bold 40px Jolly Lodger';
+      // context.fillStyle = '#301b4c';
+      // context.fillText('SURVIVE THE NIGHT', this.xCenter, yPos);
 
       /*
       * Class select
       */
       var classXPos = 130;
-      yPos += 120;
+      yPos += 80;
       for (var i=0; i < CHARCLASSES.length; i++) {
         // Draw director further right than the other classes
         if (i == CHARCLASS.DIRECTOR) {
@@ -146,10 +146,10 @@ LobbyScreen = me.ScreenObject.extend( {
         // Draw class description
         context.fillStyle = 'black';
         context.font = '16px Droid Sans';
-        context.fillText(CHARCLASSES[i].descript, classXPos, yPos + 30);
+        context.fillText(CHARCLASSES[i].descript, classXPos, yPos + 20);
         // Draw pros and cons
-        context.font = '14px Droid Sans';
-        var attrYPos = yPos + 50;
+        context.font = '12px Droid Sans';
+        var attrYPos = yPos + 40;
         // Pros
         for (var j=0; j < CHARCLASSES[i].pros.length; j++) {
           context.fillStyle = '#296d0a';

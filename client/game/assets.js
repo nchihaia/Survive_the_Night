@@ -4,33 +4,27 @@ var assets = [
   * Sprites
   */
   {
-    name: 'playerMock',
+    name: 'assault',
     type:'image',	
-    src: 'assets/sprites/playerMock.png'
+    src: 'assets/sprites/assault.png'
   },
 
   {
-    name: 'assaultMock',
+    name: 'heavy',
     type:'image',	
-    src: 'assets/sprites/assaultMock.png'
+    src: 'assets/sprites/heavy.png'
   },
 
   {
-    name: 'heavyMock',
+    name: 'support',
     type:'image',	
-    src: 'assets/sprites/heavyMock.png'
+    src: 'assets/sprites/support.png'
   },
 
   {
-    name: 'supportMock',
+    name: 'director',
     type:'image',	
-    src: 'assets/sprites/supportMock.png'
-  },
-
-  {
-    name: 'directorMock',
-    type:'image',	
-    src: 'assets/sprites/directorMock.png'
+    src: 'assets/sprites/director.png'
   },
 
   {
@@ -40,13 +34,61 @@ var assets = [
   },
 
   {
-    name: 'enemyMock',
+    name: 'basic_minion_A',
     type: 'image',	
-    src: 'assets/sprites/enemyMock.png'
+    src: 'assets/sprites/basic_minion_A.png'
   },
 
   {
-    name: 'ammoBox',
+    name: 'basic_minion_B',
+    type: 'image',	
+    src: 'assets/sprites/basic_minion_B.png'
+  },
+
+  {
+    name: 'basic_minion_C',
+    type: 'image',	
+    src: 'assets/sprites/basic_minion_C.png'
+  },
+
+  {
+    name: 'basic_minion_D',
+    type: 'image',	
+    src: 'assets/sprites/basic_minion_D.png'
+  },
+
+  {
+    name: 'basic_minion_E',
+    type: 'image',	
+    src: 'assets/sprites/basic_minion_E.png'
+  },
+
+  {
+    name: 'basic_minion_F',
+    type: 'image',	
+    src: 'assets/sprites/basic_minion_F.png'
+  },
+
+  {
+    name: 'super_minion_A',
+    type: 'image',	
+    src: 'assets/sprites/super_minion_A.png'
+  },
+
+  {
+    name: 'super_minion_B',
+    type: 'image',	
+    src: 'assets/sprites/super_minion_B.png'
+  },
+
+  {
+    name: 'super_minion_C',
+    type: 'image',	
+    src: 'assets/sprites/super_minion_C.png'
+  },
+
+  {
+    name: 'ammo_box',
     type: 'image',
     src: 'assets/sprites/ammo_box.png'
   },

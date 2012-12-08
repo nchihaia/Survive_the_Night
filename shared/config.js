@@ -103,5 +103,5 @@ var GAMECFG = {
   playerUpdateActions: ['shotWeapon', 'summonedMinions', 'attackHits', 'wasAttacked', 
                         'hpIncreases', 'minionTargets'],
 
-  minionFields: ['id', 'minionType', 'producerId', 'posX', 'posY', 'currHp', 'maxHp']
+  minionFields: ['id', 'minionType', 'spriteIndex', 'producerId', 'posX', 'posY', 'currHp', 'maxHp']
 };

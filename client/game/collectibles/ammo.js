@@ -1,7 +1,7 @@
 var AmmoCollectible = Collectible.extend( {
 
   init: function(x, y, settings) {
-    settings.image = 'ammoBox';
+    settings.image = 'ammo_box';
     this.parent(x, y, settings, 'ammo');
     this.setTransparency('#00ffff');
   },

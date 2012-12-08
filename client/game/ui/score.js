@@ -37,6 +37,23 @@ var ScoreItem = me.HUD_Item.extend( {
       context.textAlign = 'center';
       context.fillStyle = '#402466';
       context.fillText(winText, me.video.getWidth() / 2, me.video.getHeight() / 2);
+    } else if (this.respawned == 2) {
+      this.respawned = 1;
+      var thisObj = this;
+      setTimeout(function() {
+        thisObj.respawned = 0;
+        me.game.HUD.updateItemValue('scoreItem');
+      }, 2000);
+    } 
+    
+    if (this.respawned == 1) { 
+      var message = 'You were killed by a minion.  Respawning now...';
+      this.respawn -= 1;
+
+      context.font = 'bold 40px Oswald';
+      context.textAlign = 'center';
+      context.fillStyle = '#402466';
+      context.fillText(message, me.video.getWidth() / 2, me.video.getHeight() / 2);
     }
 
     this.parent(context, x, y);

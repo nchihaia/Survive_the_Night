@@ -16,37 +16,60 @@ var MainDirectorEntity = MainPlayerEntity.extend( {
           this.summonSuper();
           break;
     }
-    return 0;
+    return [0, false];
   },
 
   update: function() {
     var entRes = me.game.collide(this);
     this.parent(this);
   },
-summonBasic: function()
-  {
-    var minion = this.summon(MinionEntity, { minionType: MINIONTYPE.BASIC });
+
+  summonBasic: function() {
+    // Pick a random sprite
+    var spriteArrLength = MINIONTYPES[MINIONTYPE.BASIC].sprite.length;
+    var randSpriteIndex = parseInt(Math.random() * spriteArrLength, 10);
+    
+    // Summon the minion
+    var minion = this.summon(MinionEntity, { 
+      minionType: MINIONTYPE.BASIC,
+      spriteIndex: randSpriteIndex
+    });
     minion.setId();
+  
+    // Tell the server about the summoned minion
     this.newActions.summonedMinions = [{ 
       id: minion.id,
       minionType: MINIONTYPE.BASIC,
+      spriteIndex: randSpriteIndex,
       name: minion.name,
       posX: minion.pos.x,
       posY: minion.pos.y
     }];
     game.minions[minion.id] = minion;
   },
-  summonSuper: function()
-  {
-      var minion = this.summon(MinionEntity, { minionType: MINIONTYPE.SUPER});
-      minion.setId();
-      this.newActions.summonedMinions =[{
-      minionType:MINIONTYPE.SUPER,
+
+  summonSuper: function() {
+    // Pick a random sprite
+    var spriteArrLength = MINIONTYPES[MINIONTYPE.SUPER].sprite.length;
+    var randSpriteIndex = parseInt(Math.random() * spriteArrLength, 10);
+    
+    // Summon the minion
+    var minion = this.summon(MinionEntity, { 
+      minionType: MINIONTYPE.SUPER,
+      spriteIndex: randSpriteIndex
+    });
+    minion.setId();
+  
+    // Tell the server about the summoned minion
+    this.newActions.summonedMinions = [{ 
+      id: minion.id,
+      minionType: MINIONTYPE.SUPER,
+      spriteIndex: randSpriteIndex,
       name: minion.name,
       posX: minion.pos.x,
       posY: minion.pos.y
-      }];
-  game.minions[minion.id] = minion;
+    }];
+    game.minions[minion.id] = minion;
   }
 });
 
@@ -72,15 +95,12 @@ var OtherDirectorEntity = OtherPlayerEntity.extend( {
       
       // Director summoned a minion
       if (typeof updateItem.summonedMinions !== 'undefined') {
-        var minion = updateItem.summonedMinions[0];
-        logger(this.name + ' summoned a minion at ' + minion.posX + ', ' + minion.posY, 2);
-        minion = this.summon(MinionEntity, { 
-          id: minion.id, 
-          minionType: MINIONTYPE.BASIC,
-          posX: minion.posX, 
-          posY: minion.posY
-        });
-        game.minions[minion.id] = minion;
+        for (var j=0; j < updateItem.summonedMinions.length; j++) {
+          var minionAttrs = updateItem.summonedMinions[j];
+          logger(this.name + ' summoned a minion at ' + minionAttrs.posX + ', ' + minionAttrs.posY, 2);
+          var minion = this.summon(MinionEntity, minionAttrs);
+          game.minions[minion.id] = minion;
+        }
       }
       
       // Director's minion(s) changed their targets

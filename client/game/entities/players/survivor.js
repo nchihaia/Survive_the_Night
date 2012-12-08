@@ -11,12 +11,13 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
     if (entRes && entRes.obj.entType == ENTTYPES.ENEMY) {
       var enemy = entRes.obj;
       if (enemy.isMinion) {
-        var damage = enemy.attemptAbility(this, { damage: enemy.damage });
-        if (typeof damage === 'number') {
+        var damageItem = enemy.attemptAbility(this, { damage: enemy.damage });
+        if (typeof damageItem[0] === 'number') {
           me.game.HUD.updateItemValue('charItem');
           this.newActions.wasAttacked = this.newActions.wasAttacked || [];
           this.newActions.wasAttacked.push({
-            damage: damage,
+            damage: damageItem[0],
+            crit: damageItem[1],
             attackerId: enemy.id
           });
         }
@@ -34,20 +35,22 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
         case "D":  this.ability1(); break;
         case "F":  this.ability2(); break;
     }
-    return 0;
+    return [0, false];
   },
   
   // Called when the bullet projectile hits a target
   performAttack: function(entity, attack) {
-    var damage = this.parent(entity, attack);
+    var damageItem = this.parent(entity, attack);
     // Tell the server about the attack
     this.newActions.attackHits = this.newActions.attackHits || [];
     this.newActions.attackHits.push({ 
-      damage: damage,
+      damage: damageItem[0],
+      crit: damageItem[1],
       entityId: entity.id
     });
-    return damage;
+    return damageItem;
   },
+
   ability1: function()
   {
     this.shoot(BulletProjectile);
@@ -105,7 +108,8 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
           var attackEnemy = updateItem.attackHits[i];
           var target = findEntityById(attackEnemy.entityId);
           if (typeof target !== 'undefined') {
-            this.performAttack(target, attackEnemy);
+            this.performAttack(target, attackEnemy, attackEnemy.damage, 
+                               attackEnemy.crit);
           }
         }
       }
@@ -116,7 +120,8 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
           var attackByEnemy = updateItem.wasAttacked[j];
           var enemy = findEntityById(attackByEnemy.attackerId);
           if (typeof enemy !== 'undefined') {
-            enemy.performAttack(this, attackByEnemy);
+            enemy.performAttack(this, attackByEnemy, attackByEnemy.damage, 
+                                attackByEnemy.crit);
           }
         }
       }

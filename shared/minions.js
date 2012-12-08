@@ -6,31 +6,76 @@ var MINIONTYPE = {
 var MINIONTYPES = [
   {
     name: 'Basic Minion',
-    sprite: 'enemyMock',
-    spriteWidth: 39,
-    spriteHeight: 48,
+    sprite: [
+      {
+        image: 'basic_minion_A',
+        width: 39,
+        height: 48
+      },
+      {
+        image: 'basic_minion_B',
+        width: 32,
+        height: 48
+      },
+      {
+        image: 'basic_minion_C',
+        width: 32,
+        height: 48
+      },
+      {
+        image: 'basic_minion_D',
+        width: 32,
+        height: 48
+      },
+      {
+        image: 'basic_minion_E',
+        width: 48,
+        height: 53 
+      },
+      {
+        image: 'basic_minion_F',
+        width: 35,
+        height: 45 
+      }
+    ],
     entType: 1,
-    baseHp: 10,
+    baseHp: 100,
     actionCooldownTime: 1000,
     damage: 5,
+    critChance: 0.1,
     // How many points do the survivors get when this minion is slain
     points: 10,
-    speed: 3,
-    maxSpeed: 4
+    speed: 2,
+    maxSpeed: 2
   },
 
   {
     name: 'Super Minion',
-    sprite: 'assaultMock',
-    spriteWidth: 32,
-    spriteHeight: 48,
+    sprite: [
+      {
+        image: 'super_minion_A',
+        width: 96,
+        height: 96 
+      },
+      {
+        image: 'super_minion_B',
+        width: 96,
+        height: 96
+      },
+      {
+        image: 'super_minion_C',
+        width: 96,
+        height: 96
+      }
+    ],
     entType: 1,
-    baseHp: 30,
-    actionCooldownTime: 1500,
-    damage: 5,
+    baseHp: 1000,
+    actionCooldownTime: 500,
+    damage: 20,
+    critChance: 0.3,
     // How many points do the survivors get when this minion is slain
-    points: 200,
-    speed: 3,
-    maxSpeed: 4
+    points: 100,
+    speed: 1,
+    maxSpeed: 1
   }
 ];

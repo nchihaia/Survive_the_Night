@@ -1,4 +1,4 @@
-Character sprites:
+Character/minion sprites (based on Final Fantasy and Shadow Hearts):
 http://untamed.wild-refuge.net/rmxpresources.php?characters
 
 Map tilesets:

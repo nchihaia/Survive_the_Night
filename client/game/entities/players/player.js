@@ -13,17 +13,17 @@ var PlayerEntity = Entity.extend( {
 
     this.defaultAnimationSet();
 
-    // Movements settings for this entity.  Look at melonjs docs for more
-    // info, but the names of these settings should be relatively self-explanatory
-    this.setVelocity(5, 5);
-    this.collidable = true;
-    
     // Merge attrs fields into this entity
     customMerge(this, attrs, GAMECFG.playerFields); 
+
+    var speed = CHARCLASSES[this.charclass].speed;
+    this.setVelocity(speed, speed);
+    this.collidable = true;
 
     this.entType = CHARCLASSES[this.charclass].entType;
     this.actionCooldownTime = CHARCLASSES[this.charclass].actionCooldownTime;
     this.ammoCount = CHARCLASSES[this.charclass].startingAmmoAmount;
+    this.critChance = CHARCLASSES[this.charclass].critChance;
 
     // Set Hp.  This value could come from some attribute set on the server side or
     // a default value from the config if no value is passed through attrs
@@ -39,10 +39,10 @@ var PlayerEntity = Entity.extend( {
     this.dmgMultiplier = CHARCLASSES[this.charclass].baseDmgMultiplier;
 
     // Decide the max number of update items to keep and the margin (cutoff point)
-    // that maxUpdatesToKeep has to go over before we trim the number of updates 
+    // that maxUpdatesToKeep has to go over before we trim the number of updates
     // down to equal maxUpdatesToKeep.
     // Higher values => more fidelity, possibly more delay
-    // Lower values => less delay, possibly less fidelity 
+    // Lower values => less delay, possibly less fidelity
     this.updatesMargin = 1;
     this.maxUpdatesToKeep = parseInt(this.updatesMargin / GAMECFG.marginMaxUpdatesRatio, 10);
   },
@@ -57,7 +57,8 @@ var MainPlayerEntity = PlayerEntity.extend( {
   init: function(x, y, settings, attrs) {
     this.parent(x, y, settings, attrs);
 
-    this.setMaxVelocity(6, 6);
+    var maxSpeed = CHARCLASSES[attrs.charclass].maxSpeed;
+    this.setMaxVelocity(maxSpeed, maxSpeed);
     // Camera will follow this entity around
     me.game.viewport.follow(this);
 
@@ -86,7 +87,7 @@ var MainPlayerEntity = PlayerEntity.extend( {
     if (me.input.isKeyPressed('action')) {
       // Only do action if there are enough ammo and not on "cooldown"
     if (this.ammoCount >= GAMECFG.basicAttackAmmoCost) {
-        var canPerform = this.attemptAbility("blah", "D");
+        var canPerform = this.attemptAbility("blah", "D")[0];
         if (typeof canPerform === 'number') {
           this.ammoCount -= GAMECFG.basicAttackAmmoCost;
          me.game.HUD.updateItemValue('charItem');
@@ -95,7 +96,7 @@ var MainPlayerEntity = PlayerEntity.extend( {
     }
     if(me.input.isKeyPressed('action2')) {
         if(this.ammoCount >= GAMECFG.specialAttackAmmoCost) {
-           var canPerform2 = this.attemptAbility("blah", "F");
+           var canPerform2 = this.attemptAbility("blah", "F")[0];
             if(typeof canPerform2 === 'number'){
                 this.ammoCount -= GAMECFG.specialAttackAmmoCost;
             }
@@ -207,7 +208,7 @@ var OtherPlayerEntity = PlayerEntity.extend( {
     this.drawHp(context, yPos);
     yPos -= 10;
     this.drawBasicInfo(context, yPos);
-    this.parent(context, yPos);
+    this.parent(context);
   },
 
   critUpdate: function(updateItem) {

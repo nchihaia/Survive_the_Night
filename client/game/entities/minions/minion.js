@@ -1,11 +1,12 @@
 var MinionEntity = PathfindingEntity.extend( {
 
   init: function(producer, attrs) {
-    settings = {};
-    settings.image = MINIONTYPES[attrs.minionType].sprite;
-    settings.spritewidth = MINIONTYPES[attrs.minionType].spriteWidth;
-    settings.spriteheight = MINIONTYPES[attrs.minionType].spriteHeight;
-    this.parent(0, 0, settings);
+    var sprite = MINIONTYPES[attrs.minionType].sprite[attrs.spriteIndex];
+    this.parent(0, 0, {
+      image: sprite.image,
+      spritewidth: sprite.width,
+      spriteheight: sprite.height
+    });
 
     this.defaultAnimationSet();
     this.collidable = true;
@@ -22,6 +23,7 @@ var MinionEntity = PathfindingEntity.extend( {
     this.target = producer;
     this.entType = MINIONTYPES[attrs.minionType].entType;
     this.damage = MINIONTYPES[attrs.minionType].damage;
+    this.critChance = CHARCLASSES[attrs.minionType].critChance;
     this.dmgMultiplier = 1;
     this.actionCooldownTime = MINIONTYPES[attrs.minionType].actionCooldownTime;
     this.isMinion = true;
@@ -51,8 +53,10 @@ var MinionEntity = PathfindingEntity.extend( {
     // Periodically update this minion's target to the closest survivor
     // by proximity.  Only the director handles this.
     var mainPlayer = game.players[mainPlayerId];
-    if (typeof mainPlayer !== 'undefined' && mainPlayer.charclass == CHARCLASS.DIRECTOR &&
-      me.timer.getTime() % 50 === 0) {
+    if (typeof mainPlayer !== 'undefined' && mainPlayer.charclass == CHARCLASS.DIRECTOR) {
+      // Find a possible new target when the target is the producer or
+      // if the current time in ms is a divisor of 100
+      if (this.target == this.producer || me.timer.getTime() % 100 === 0) {
         var oldTarget = this.target;
         this.findTarget();
         // Update the server if the target has changed
@@ -64,6 +68,7 @@ var MinionEntity = PathfindingEntity.extend( {
           });
         }
       }
+    }
     
     // Have the minion navigate to its designated target
     if (typeof this.target !== 'undefined') {
@@ -114,14 +119,14 @@ var MinionEntity = PathfindingEntity.extend( {
     if (typeof ability === 'undefined') {
       ability = { damage: this.damage };
     }
-    var damage = this.performAttack(target, ability);
-    return damage;
+    var damageItem = this.performAttack(target, ability);
+    return damageItem;
   },
   
   // Attack hits for damage
   performAttack: function(target, attack) {
-    var damage = this.parent(target, attack);
-    return damage;
+    var damageItem = this.parent(target, attack);
+    return damageItem;
   },
   
   // Find and set the minion's target to the survivor
