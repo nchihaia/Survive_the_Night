@@ -62,6 +62,8 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
       switch(n)
       {
           case CHARCLASS.SUPPORT: this.healClose();break;
+          case CHARCLASS.HEAVY: this.bigShot();break;
+          case CHARCLASS.ASSAULT: this.shootLots();break;
       }
   },
 
@@ -74,7 +76,44 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
            if(this.distanceTo(n)<=40 && n.entType == ENTTYPES.SURVIVOR)
                {this.hpIncrease(n, 10);}
        }
-  }
+    },
+ shootLots: function(){
+     bullet = new BulletProjectile(this);
+     bullet.resize(1.5);
+     bullet.damage = 2;
+     me.game.add(bullet, 2);
+     me.game.sort();
+     bullet = new BulletProjectile(this);
+     bullet.resize(1.5);
+     bullet.damage = 2;
+     bullet.pos.y +=15;
+     me.game.add(bullet, 2);
+     me.game.sort();
+     bullet = new BulletProjectile(this);
+     bullet.resize(1.5);
+     bullet.damage = 2;
+     bullet.pos.y +=30;
+     me.game.add(bullet, 2);
+     me.game.sort();
+     bullet.pos.y -=15;
+     me.game.add(bullet, 2);
+     me.game.sort();
+     bullet = new BulletProjectile(this);
+     bullet.resize(1.5);
+     bullet.damage = 2;
+     bullet.pos.y -=30;
+     me.game.add(bullet, 2);
+     me.game.sort();
+     this.ammoCount += 5;
+ },
+ bigShot: function(){
+     bullet = new BulletProjectile(this);
+     bullet.resize(5);
+     bullet.damage = 3;
+     me.game.add(bullet, 2);
+     me.game.sort();
+     this.newActions.shotWeapon = true;
+ }
 });
 
 // A survivor controlled by another client
