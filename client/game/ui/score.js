@@ -25,38 +25,54 @@ var ScoreItem = me.HUD_Item.extend( {
     context.fillStyle = '#d53533';
     context.fillText(directorScore, this.pos.x + 30, this.pos.y);
 
+    /*
+    * Winner
+    */
     if (typeof game.winner !== 'undefined') {
       var winText;
-      if (game.winner == ENTTYPES.SURVIVOR) {
-        winText = 'SURVIVORS WIN';
-      } else if (game.winner == ENTTYPES.ENEMY) {
-        winText = 'DIRECTOR WINS';
+      switch(game.winner) {
+        case ENTTYPES.SURVIVOR:
+          winText = 'SURVIVORS WIN';
+          break;
+        case ENTTYPES.ENEMY:
+          winText = 'DIRECTOR WINS';
       }
-      
-      context.font = 'bold 100px Oswald';
-      context.textAlign = 'center';
-      context.fillStyle = '#402466';
-      context.fillText(winText, me.video.getWidth() / 2, me.video.getHeight() / 2);
-    } else if (this.respawned == 2) {
-      this.respawned = 1;
-      var thisObj = this;
-      setTimeout(function() {
-        thisObj.respawned = 0;
-        me.game.HUD.updateItemValue('scoreItem');
-      }, 2000);
-    } 
-    
-    if (this.respawned == 1) { 
-      var message = 'You were killed by a minion.  Respawning now...';
-      this.respawn -= 1;
+      this.drawBigMessage(context, winText);
+    }
 
-      context.font = 'bold 40px Oswald';
-      context.textAlign = 'center';
-      context.fillStyle = '#402466';
-      context.fillText(message, me.video.getWidth() / 2, me.video.getHeight() / 2);
+    /*
+    * Big message display
+    */
+    for (var index in MESSAGES) {
+      var message = MESSAGES[index];
+      if (this[message.name]) { 
+        this.drawBigMessage(context, message.text, message.size, message.color);
+      }
     }
 
     this.parent(context, x, y);
+  },
+
+  setMessage: function(messageName) {
+    this[messageName] = true;
+    this.messageTimeout(messageName);
+  },
+
+  messageTimeout: function(messageName) {
+    setTimeout(function() {
+      if (typeof game.score !== 'undefined') {
+        game.score[messageName] = false;
+        me.game.HUD.updateItemValue('scoreItem');
+      }
+    },  GAMECFG.bigMessageDisplayTime * 1000);
+  },
+
+  drawBigMessage: function(context, message, size, color) {
+    size = size || '40px';
+    context.font = 'bold ' + size + ' Oswald';
+    context.textAlign = 'center';
+    context.fillStyle = color || '#402466';
+    context.fillText(message, me.video.getWidth() / 2, me.video.getHeight() / 2);
   }
 });
 

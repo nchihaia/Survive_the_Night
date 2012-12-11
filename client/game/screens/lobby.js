@@ -27,14 +27,11 @@ LobbyScreen = me.ScreenObject.extend( {
     // Add sample class models
     this.sampleSprites = [];
     for (var i=0; i < CHARCLASSES.length; i++) {
-      this.sampleSprites[i] = new PlayerEntity(0, 0, {
-        image: CHARCLASSES[i].sprite,
-        spritewidth: 32,
-        spriteheight: 48
-      }, { charclass: i }); 
+      this.sampleSprites[i] = new PlayerEntity(0, 0, {}, { charclass: i }); 
       me.game.add(this.sampleSprites[i], 2);
       this.sampleSprites[i].resize(1.5);
     }
+    me.game.sort();
   },
 
   onDestroyEvent: function() {
@@ -135,10 +132,10 @@ LobbyScreen = me.ScreenObject.extend( {
         // Highlight the currently selected class
         if (i == lobby.players[mainPlayerId].charclass) {
           context.fillStyle = 'white';
-          this.sampleSprites[i].setCurrentAnimation('down');
+          // this.sampleSprites[i].setCurrentAnimation('down');
         } else {
           context.fillStyle = 'black';
-          this.sampleSprites[i].setCurrentAnimation('stand_down');
+          // this.sampleSprites[i].setCurrentAnimation('stand_down');
         }
         // Draw class name
         context.font = '25px Oswald';
@@ -170,7 +167,7 @@ LobbyScreen = me.ScreenObject.extend( {
       */
       context.fillStyle = 'black';
       context.font = 'bold 18px Droid Sans';
-      yPos += 120;
+      yPos += 135;
       var text = 'Choose your class then press ENTER to ready up';
       if (game.currentState === 0) {
         // For when a game hasn't started yet and everyone is in the lobby

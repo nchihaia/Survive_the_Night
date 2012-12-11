@@ -9,9 +9,11 @@ var CHARCLASSES = [
   {
     name: 'ASSAULT', 
     descript: 'Speedy combatant',
-    pros: ['fast-moving', 
+    pros: ['special: fires multiple bullets at once',
+           'fast-moving', 
            'high crit chance'],
-    cons: ['low health'],
+    cons: ['low health',
+           'low starting ammo'],
     sprite: 'assault',
     entType: 0,
     baseLevel: 1,
@@ -19,15 +21,17 @@ var CHARCLASSES = [
     baseDmgMultiplier: 2,
     critChance: 0.4,
     actionCooldownTime: 300,
-    startingAmmoAmount: 200,
+    startingAmmoAmount: 1000,
     speed: 7,
-    maxSpeed: 8
+    maxSpeed: 8,
+    ability2: 10
   },
 
   {
     name: 'HEAVY', 
     descript: 'Durable tank',
-    pros: ['lots of damage', 
+    pros: ['special: fire a massive bullet',
+           'lots of damage', 
            'lots of health',
            'lots of ammo'],
     cons: ['slow-moving', 
@@ -39,7 +43,7 @@ var CHARCLASSES = [
     baseDmgMultiplier: 9, 
     critChance: 0.2,
     actionCooldownTime: 500,
-    startingAmmoAmount: 500,
+    startingAmmoAmount: 2000,
     speed: 3,
     maxSpeed: 4
   },
@@ -47,7 +51,7 @@ var CHARCLASSES = [
   {
     name: 'SUPPORT', 
     descript: 'Versatile healer',
-    pros: ['heals self and nearby allies', 
+    pros: ['special: heals self and nearby allies', 
            'double ammo boxes and medkits'],
     cons: ['low damage'],
     sprite: 'support',
@@ -57,7 +61,7 @@ var CHARCLASSES = [
     baseDmgMultiplier: 2,
     critChance: 0.2,
     actionCooldownTime: 300,
-    startingAmmoAmount: 200,
+    startingAmmoAmount: 1000,
     speed: 5,
     maxSpeed: 6
   },
@@ -65,15 +69,16 @@ var CHARCLASSES = [
   {
     name: 'DIRECTOR', 
     descript: 'Really evil',
-    pros: ['nothing'],
-    cons: ['everything'],
+    pros: ['special: summon a powerful minion'],
+    cons: ['terrible manners'],
     sprite: 'director',
     entType: 1,
     baseLevel: 99,
-    baseHp: 1000000,
+    baseHp: 999999,
     actionCooldownTime: 2000,
     startingAmmoAmount: 100,
     speed: 3,
-    maxSpeed: 3
+    maxSpeed: 5,
+    expOnHit: 1
   }
 ];

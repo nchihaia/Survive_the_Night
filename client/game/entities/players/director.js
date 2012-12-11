@@ -70,6 +70,14 @@ var MainDirectorEntity = MainPlayerEntity.extend( {
       posY: minion.pos.y
     }];
     game.minions[minion.id] = minion;
+  },
+  
+  // Give director the base ammo * number of players in game * day
+  ammoRefresh: function() {
+    var numPlayers = Object.keys(game.players).length;
+    var baseAmmo = CHARCLASSES[this.charclass].startingAmmoAmount;
+    var day = game.time.getDay();
+    this.ammoCount = baseAmmo * numPlayers * day;
   }
 });
 

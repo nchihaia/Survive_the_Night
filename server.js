@@ -100,7 +100,15 @@ io.sockets.on('connection', function(socket) {
         }
       }
 
-      if (validClass || !GAMECFG.directorClassRestrict) {
+      var thisPlayer = lobby.players[socket.id];
+      var thisPlayerName = '';
+      if (typeof thisPlayer !== 'undefined') {
+        thisPlayerName = thisPlayer.name;
+      }
+    
+      // If director class restrict is on, let a player named 'MOD' choose whichever
+      // class they want.
+      if (validClass || !GAMECFG.directorClassRestrict || thisPlayerName == 'MOD') {
         socket.emit('the charclass chosen is valid');
       } else {
         socket.emit('the charclass chosen is invalid');
@@ -174,7 +182,6 @@ io.sockets.on('connection', function(socket) {
         // Comment out if seeing lag
         // var filteredUpdate = customCopy(clientUpdates[index], updateFields);
         // clientUpdates[index] = filteredUpdate;
-
         parseUpdate(player, clientUpdates[index]);
       }
       game.privData.updates.playerUpdates[socket.id] = game.privData.updates.playerUpdates[socket.id].concat(clientUpdates);
@@ -382,6 +389,7 @@ function addPlayer(id, name, charclass) {
     maxHp: CHARCLASSES[charclass].baseHp,
     currHp: CHARCLASSES[charclass].baseHp,
     dmgMultiplier: CHARCLASSES[charclass].baseDmgMultiplier,
+    expOnHit: CHARCLASSES[charclass].expOnHit,
     experience: 0,
     updates: []
   };
@@ -395,6 +403,7 @@ function addMinion(minion, producerId) {
     minion.maxHp = MINIONTYPES[minion.minionType].baseHp;
     minion.currHp = minion.maxHp;
     minion.entType = ENTTYPES.ENEMY;
+    minion.expOnHit = MINIONTYPES[minion.minionType].expOnHit;
 
     logger('New minion with id: ' + minion.id, 1);
     // Since it is assumed there is only one director summoning minions,
@@ -448,9 +457,9 @@ function parseSurvivorUpdate(survivor, updateItem) {
     for (var i=0; i < attackHits.length; i++) {
       var attackHit = updateItem.attackHits[i];
       var target = findEntityById(attackHit.entityId);
-      var successfulHit = calcAttack(survivor, target,  attackHit.damage);
+      var successfulHit = calcAttack(survivor, target, attackHit.damage);
       if (successfulHit) {
-        handleExperience(survivor);
+        handleExperience(survivor, target);
       }
     }
   }
@@ -497,6 +506,8 @@ function calcAttack(attacker, target, damage) {
             game.pubData.score.survivors += MINIONTYPES[target.minionType].points;
             logger('The survivors now have ' + game.pubData.score.survivors + ' points', 2);
             delFromGame(target);
+          } else if (target.charclass == CHARCLASS.DIRECTOR) {
+            game.pubData.score.survivors = GAMECFG.pointsToWin;
           }
 
         } else if (attacker.entType == ENTTYPES.ENEMY && typeof target.level !== 'undefined') {
@@ -515,10 +526,12 @@ function calcAttack(attacker, target, damage) {
   }
 }
 
-function handleExperience(survivor) {
-  survivor.experience += 2;
-  logger(survivor.name + ' gains 2 experience points', 2);
-  handleLevelUp(survivor);
+function handleExperience(survivor, target) {
+  if (typeof target.expOnHit !== 'undefined') {
+    survivor.experience += target.expOnHit;
+    logger(survivor.name + ' gains 2 experience points', 2);
+    handleLevelUp(survivor);
+  }
 }
 
 function handleLevelUp(survivor) {
@@ -529,10 +542,10 @@ function handleLevelUp(survivor) {
 
       // Give player more health
       var baseHp = CHARCLASSES[survivor.charclass].baseHp;
-      survivor.maxHp = parseInt(survivor.maxHp + (survivor.level * (baseHp / 10)), 10);
+      survivor.maxHp += (survivor.level * baseHp);
 
       // Give player more damage
-      survivor.dmgMultiplier += CHARCLASSES[survivor.charclass].baseDmgMultiplier;
+      survivor.dmgMultiplier *= CHARCLASSES[survivor.charclass].baseDmgMultiplier;
 
       logger(survivor.name + ' is now level ' + survivor.level, 2); 
       io.sockets.emit('a player leveled up', {

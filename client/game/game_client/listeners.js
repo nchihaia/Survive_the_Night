@@ -190,6 +190,7 @@ socket.on('a player leveled up', function(data) {
     // Merge attributes
     customMerge(player, data.attrs, GAMECFG.playerFields);
     if (data.id == mainPlayerId) {
+      game.score.setMessage('levelUp');
       me.game.HUD.updateItemValue('charItem');
     }
   }

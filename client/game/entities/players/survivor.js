@@ -56,64 +56,37 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
     this.shoot(BulletProjectile);
     this.newActions.shotWeapon = true;
   },
+
   ability2: function()
   {
-      var n = this.charclass;
-      switch(n)
-      {
-          case CHARCLASS.SUPPORT: this.healClose();break;
-          case CHARCLASS.HEAVY: this.bigShot();break;
-          case CHARCLASS.ASSAULT: this.shootLots();break;
-      }
+    var n = this.charclass;
+    switch(n)
+    {
+      case CHARCLASS.SUPPORT: 
+        this.healClose();
+        break;
+      case CHARCLASS.HEAVY: 
+        this.bigShot();
+        this.newActions.bigShot = true;
+        break;
+      case CHARCLASS.ASSAULT: 
+        this.shootLots();
+        this.newActions.shootLots = true;
+    }
   },
 
   // hpIncrease is now called by the healer and has two arguments:
   //  - the entity to heal
   //  - the amount to heal
   healClose: function(){
-       for (var playerId in game.players){
-           var n = game.players[playerId];
-           if(this.distanceTo(n)<=40 && n.entType == ENTTYPES.SURVIVOR)
-               {this.hpIncrease(n, 10);}
-       }
-    },
- shootLots: function(){
-     bullet = new BulletProjectile(this);
-     bullet.resize(1.5);
-     bullet.damage = 2;
-     me.game.add(bullet, 2);
-     me.game.sort();
-     bullet = new BulletProjectile(this);
-     bullet.resize(1.5);
-     bullet.damage = 2;
-     bullet.pos.y +=15;
-     me.game.add(bullet, 2);
-     me.game.sort();
-     bullet = new BulletProjectile(this);
-     bullet.resize(1.5);
-     bullet.damage = 2;
-     bullet.pos.y +=30;
-     me.game.add(bullet, 2);
-     me.game.sort();
-     bullet.pos.y -=15;
-     me.game.add(bullet, 2);
-     me.game.sort();
-     bullet = new BulletProjectile(this);
-     bullet.resize(1.5);
-     bullet.damage = 2;
-     bullet.pos.y -=30;
-     me.game.add(bullet, 2);
-     me.game.sort();
-     this.ammoCount += 5;
- },
- bigShot: function(){
-     bullet = new BulletProjectile(this);
-     bullet.resize(5);
-     bullet.damage = 3;
-     me.game.add(bullet, 2);
-     me.game.sort();
-     this.newActions.shotWeapon = true;
- }
+    for (var playerId in game.players){
+      var n = game.players[playerId];
+      if(this.distanceTo(n)<=GAMECFG.healCloseRange && n.entType == ENTTYPES.SURVIVOR) {
+        var amount = n.level * GAMECFG.healCloseMultiplier;
+        this.hpIncrease(n, amount);
+      }
+    }
+  }
 });
 
 // A survivor controlled by another client
@@ -131,6 +104,10 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
 
       if (typeof updateItem.shotWeapon !== 'undefined') {
         this.shoot(BulletProjectile);
+      } else if (typeof updateItem.shootLots !== 'undefined') {
+        this.shootLots();
+      } else if (typeof updateItem.bigShot !== 'undefined') {
+        this.bigShot();
       }
       this.critUpdate(updateItem);
     }

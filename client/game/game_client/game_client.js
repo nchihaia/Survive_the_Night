@@ -1,6 +1,5 @@
 // Set the url of our game server for the client can communicate with
-var socket = io.connect('http:\/\/localhost:5000');
-// var socket = io.connect('http:\/\/stn.herokuapp.com');
+var socket = io.connect(GAMECFG.server);
 
 var gameLogLevel = GAMECFG.logLevel;
 

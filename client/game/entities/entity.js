@@ -120,6 +120,33 @@ var Entity = me.ObjectEntity.extend( {
     me.game.add(new projectile(this), 2);
     me.game.sort();
   },
+
+  shootLots: function(){
+    var numBulletsHalf = parseInt(GAMECFG.numberBulletsShootLots / 2, 10);
+    for (var i=0-numBulletsHalf; i < numBulletsHalf; i++) {
+      var bullet = new BulletProjectile(this);
+      // Render bullets
+      switch (this.direction) {
+        case 'left':
+        case 'right':
+          bullet.pos.y += (i * 15);
+          break;
+        case 'up':
+        case 'down':
+          bullet.pos.x += (i * 15);
+      }
+      me.game.add(bullet, 2);
+    }
+    me.game.sort();
+  },
+  
+  bigShot: function(){
+    var bullet = new BulletProjectile(this);
+    bullet.resize(3);
+    bullet.damage *= GAMECFG.bigShotMultiplier;
+    me.game.add(bullet, 2);
+    me.game.sort();
+  },
   
   // Have this entity summon another entity
   summon: function(EntityToSummon, attrs) {
@@ -145,26 +172,31 @@ var Entity = me.ObjectEntity.extend( {
       // multiplier.  The damage multiplier of survivors vary with levels.  All minions
       // have a damage multiplier of 1.
       var damage = attack.damage * this.dmgMultiplier;
+      var crit = false;
       // If this function is called by the main player, or the target is the main player,
       // do some additional damage calculation.  Otherwise, just return attack.damage
       // since this was obviously passed onto us by the server
       if (this.id == mainPlayerId || target.id == mainPlayerId) {
         var isNighttime = game.time.isNighttime();
-
-        // Quadruple damage for minions at night; double damage for survivors 
-        // in the daytime
+        // Minions do more damage at night; survivors do more damage in the daytime
         if (isNighttime && this.isMinion) {
-          damage *= 4;
+          damage *= GAMECFG.minionDmgNighttime;
         } else if (!isNighttime && this.entType == ENTTYPES.SURVIVOR) {
-          damage *= 2;
+          damage *= GAMECFG.survivorsDmgDaytime;
         }
-      }
-      // Factor in critical hits
-      var crit = false;
-      if (typeof this.critChance === 'number') {
-        if (Math.random() <= this.critChance) {
-          crit = true;
-          damage *= 2;
+        // If a minion's damage is 10 and the survivors have 20 points,
+        // minions do 10*20 damage
+        if (this.isMinion) {
+          if (game.score.survivors !== 'undefined') {
+            damage *= Math.max(game.score.survivors, 1);
+          }
+        }
+        // Factor in critical hits
+        if (typeof this.critChance === 'number') {
+          if (Math.random() <= this.critChance) {
+            crit = true;
+            damage *= GAMECFG.critDmgMultiplier;
+          }
         }
       }
       return [damage, crit];
@@ -201,28 +233,45 @@ var Entity = me.ObjectEntity.extend( {
       if (target.currHp <= 0) {
         target.slayer = this;
         if (target.entType == ENTTYPES.ENEMY) {
-          // If target is the director or a minion, award points to the survivors
           if (target.alive) {
             target.alive = false;
-            target.flicker(20, function() {
-              delFromGame(target);
-            });
+            var targetId = target.id;
+            if (target.isMinion) {
+              target.flicker(20);
+              // Flicker callback not working correctly
+              setTimeout(function() {
+                var minion = game.minions[targetId];
+                if (typeof minion !== 'undefined') {
+                  delFromGame(minion);
+                }
+              }, 20);
+            } else if (target.charclass == CHARCLASS.DIRECTOR) {
+              // Survivors automatically win if director is killed
+              game.score.survivors = GAMECFG.pointsToWin;
+              target.flicker(2000);
+              setTimeout(function() {
+                var director = game.players[targetId];
+                if (typeof director !== 'undefined') {
+                  delFromGame(director);
+                }
+              }, 2000);
+            }
           }
         } else {
           // Else, target is a survivor, so the director gets the points
           if (typeof game.score !== 'undefined') {
             game.score.director += (target.level * 25);
-            me.game.HUD.updateItemValue('scoreItem');
             // Respawn survivor at the starting point
             target.pos.x = GAMECFG.survivorStartingXPos;
             target.pos.y = GAMECFG.survivorStartingYPos;
             target.currHp = target.maxHp;
             // Display message if target was the main player
             if (target.id === mainPlayerId) {
-              game.score.respawned = 2;
+              game.score.setMessage('respawned');
             }
           }
         }
+        me.game.HUD.updateItemValue('scoreItem');
       }
 
       // Make target flicker

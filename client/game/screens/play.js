@@ -112,6 +112,8 @@ var PlayScreen = me.ScreenObject.extend( {
       // From 7AM to noon
       lastHourToTween = 11;
       tweenMul = 0; 
+      // Show daytime start message
+      game.score.setMessage('daytimeStart');
     } else if (hour >= 12 && hour < 17) {
       // From noon to 5PM
       lastHourToTween = 16;
@@ -124,6 +126,13 @@ var PlayScreen = me.ScreenObject.extend( {
       // From 6PM to midnight 
       lastHourToTween = 24;
       tweenMul = 12; 
+      // Show nighttime start message
+      game.score.setMessage('nighttimeStart');
+      // If main player is the director, refresh ammo
+      var mainPlayer = game.players[mainPlayerId];
+      if (typeof mainPlayer !== 'undefined' && mainPlayer.charclass == CHARCLASS.DIRECTOR) {
+        mainPlayer.ammoRefresh();
+      }
     }
 
     var tweenTo = GAMECFG.minLightOpacity + (tweenMul * this.tweenStep);

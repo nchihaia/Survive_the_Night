@@ -5,6 +5,7 @@ cat ../shared/config.js \
     ../shared/charclasses.js \
     ../shared/minions.js \
     ../shared/collectibles.js \
+    ../shared/messages \
     ../client/game/main.js \
     ../client/game/assets.js \
     ../client/game/ui/time.js \

@@ -526,6 +526,7 @@ goAround: function() {
     {
         case "Up":
             {
+                // Getting a null here for this.blockHoriz.top
                 var test = this.lookUp(this.blockHoriz.top);
                 var test1;
                 if(this.isObject(this.blockHoriz.right-1, test))

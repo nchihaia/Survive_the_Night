@@ -22,36 +22,31 @@ var BulletProjectile = me.ObjectEntity.extend( {
     this.vel.y = 0;
     this.pos.x = producer.pos.x;
     this.pos.y = (producer.top + producer.bottom) / 2;
-	
+
     switch(producer.direction) {
       case 'up':
         this.vel.y = -20;
-        this.pos.x += 12;
-		this.angle = 0;
-		this.flipY(flip=false);
-        this.setCurrentAnimation('vert');
+        this.pos.x += 6;
+        this.angle = 0;
+        this.flipY(flip=false);
         break;
       case 'down':
         this.vel.y = 20;
-        this.pos.x += 12;
-		this.angle = Number.prototype.degToRad (180);
-        this.setCurrentAnimation('vert');
+        this.pos.x += 10;
+        this.angle = Number.prototype.degToRad (180);
         break;
       case 'left':
         this.vel.x = -20;
-		
-		this.angle = Number.prototype.degToRad (270);
-		this.flipX(false);
-		
-        this.setCurrentAnimation('vert');
+        this.pos.y -= 10;
+        this.angle = Number.prototype.degToRad (270);
+        this.flipX(false);
         break;
       case 'right':
         this.vel.x = 20;
-		
-		this.angle = Number.prototype.degToRad (90);
-		
-        this.setCurrentAnimation('vert');
+        this.pos.y -= 14;
+        this.angle = Number.prototype.degToRad (90);
     }
+    this.setCurrentAnimation('vert');
   },
 
   update: function() {

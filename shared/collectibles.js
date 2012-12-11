@@ -1,10 +1,10 @@
 var COLLECTIBLES =  {
 
   ammo: {
-    baseAmount: 20
+    baseAmount: 30 
   },
 
   medkit: {
-    baseAmount: 15
+    baseAmount: 100
   }
 };
