@@ -39,16 +39,16 @@ var MINIONTYPES = [
       }
     ],
     entType: 1,
-    baseHp: 100,
+    baseHp: 25,
     actionCooldownTime: 1000,
     damage: 1,
     critChance: 0.05,
     // How many points do the survivors get when this minion is slain
     points: 10,
-    speed: 2,
-    maxSpeed: 2,
+    speed: 1,
+    maxSpeed: 1,
     // How many xp a player gains when the player lands a hit on the minion
-    expOnHit: 2
+    expOnHit: 5
   },
 
   {
@@ -71,13 +71,13 @@ var MINIONTYPES = [
       }
     ],
     entType: 1,
-    baseHp: 1000,
+    baseHp: 100,
     actionCooldownTime: 500,
-    damage: 10,
-    critChance: 0.4,
+    damage: 5,
+    critChance: 0.2,
     points: 50,
-    speed: 3,
-    maxSpeed: 4,
-    expOnHit: 5
+    speed: 2,
+    maxSpeed: 2,
+    expOnHit: 20
   }
 ];

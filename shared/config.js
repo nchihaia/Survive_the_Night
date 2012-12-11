@@ -7,8 +7,8 @@ var GAMECFG = {
   basicAttackAmmoCost: 1,
   specialAttackAmmoCost: 20, 
 
-  // Minions do 4 times more damage at night
-  minionDmgNighttime: 4,
+  // Minions do 2 times more damage at night
+  minionDmgNighttime: 2,
   // Survivors do 4 times more damage in the daytime
   survivorsDmgDaytime: 4,
 
@@ -19,7 +19,7 @@ var GAMECFG = {
   healCloseRange: 300,
 
   // 'heal close' will heal for 10 times the player level
-  healCloseMultiplier: 10,
+  healCloseMultiplier: 50,
 
   // How many bullets does shootLots spawn
   numberBulletsShootLots: 10,
