@@ -265,6 +265,7 @@ var Entity = me.ObjectEntity.extend( {
             target.pos.x = GAMECFG.survivorStartingXPos;
             target.pos.y = GAMECFG.survivorStartingYPos;
             target.currHp = target.maxHp;
+            target.ammoCount = CHARCLASSES[target.charclass].startingAmmoAmount;
             // Display message if target was the main player
             if (target.id === mainPlayerId) {
               game.score.setMessage('respawned');

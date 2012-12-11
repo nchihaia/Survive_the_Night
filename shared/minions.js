@@ -39,7 +39,7 @@ var MINIONTYPES = [
       }
     ],
     entType: 1,
-    baseHp: 500,
+    baseHp: 100,
     actionCooldownTime: 1000,
     damage: 1,
     critChance: 0.05,
@@ -71,7 +71,7 @@ var MINIONTYPES = [
       }
     ],
     entType: 1,
-    baseHp: 9999,
+    baseHp: 1000,
     actionCooldownTime: 500,
     damage: 10,
     critChance: 0.4,

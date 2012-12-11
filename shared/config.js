@@ -7,13 +7,13 @@ var GAMECFG = {
   basicAttackAmmoCost: 1,
   specialAttackAmmoCost: 20, 
 
-  // Minions do 10 times more damage at night
-  minionDmgNighttime: 10,
-  // Survivors do 2 times more damage in the daytime
-  survivorsDmgDaytime: 2,
+  // Minions do 4 times more damage at night
+  minionDmgNighttime: 4,
+  // Survivors do 4 times more damage in the daytime
+  survivorsDmgDaytime: 4,
 
-  // Critical hits grant 3 times more damage
-  critDmgMultiplier: 3,
+  // Critical hits grant 2 times more damage
+  critDmgMultiplier: 2,
 
   // the range of the 'heal close' ability
   healCloseRange: 300,
