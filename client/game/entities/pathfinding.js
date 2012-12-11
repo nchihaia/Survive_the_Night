@@ -971,7 +971,7 @@ goAround: function() {
           }
           if(blocked) {
             // Added this in because game was locking up
-            if (dealie !== null) {
+            if (typeof dealie !== 'undefined' && dealie !== null) {
               this.nextX = dealie.right;
             }
             this.blockHoriz = dealie;
