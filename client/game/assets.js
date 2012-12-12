@@ -161,7 +161,86 @@ var assets = [
   //   type: 'image',
   //   src: 'assets/maps/tile_floor.png'
   // },
-
+			  
+			  /*
+			   * Audio
+			   */
+			  {
+			  name: 'walkingDeadTheme',
+			  type: 'audio',
+			  src: 'assets/music/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'ZombieHorde1',
+			  type: 'audio',
+			  src: 'assets/sound_effects/zombie/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'singleFire',
+			  type: 'audio',
+			  src: 'assets/sound_effects/gunFire/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'ZombiePain',
+			  type: 'audio',
+			  src: 'assets/sound_effects/zombie/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'beginningOfDay',
+			  type: 'audio',
+			  src: 'assets/sound_effects/otherEffects/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'IncomingNightfall',
+			  type: 'audio',
+			  src: 'assets/sound_effects/otherEffects/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'HeartBeat',
+			  type: 'audio',
+			  src: 'assets/sound_effects/otherEffects/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'sunnyDay',
+			  type: 'audio',
+			  src: 'assets/sound_effects/otherEffects/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'nightTime',
+			  type: 'audio',
+			  src: 'assets/sound_effects/otherEffects/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'ammoPickup',
+			  type: 'audio',
+			  src: 'assets/sound_effects/otherEffects/',
+			  channel: 1
+			  },
+			  
+			  {
+			  name: 'SingleZombie',
+			  type: 'audio',
+			  src: 'assets/sound_effects/zombie/',
+			  channel: 1
+			  },
   /*
   * Levels
   */

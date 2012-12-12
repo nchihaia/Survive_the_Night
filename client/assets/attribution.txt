@@ -6,3 +6,9 @@ http://www.hbgames.org/forums/viewtopic.php?f=160&t=65934
 
 Ammo and health pickups:
 http://forum.zdoom.org/viewtopic.php?f=37&t=33595
+
+
+Audio:
+Intro - From AMC's "The Walking Dead" theme song
+
+ZombiePain.mp3, beginningOfDay.mp3, IncomingNightfall.mp3, HeartBeat.mp3, sunnyDay.mp3, nightTime.mp3, ammoPickup.mp3, singleZombie.mp3 - from soundbible.com

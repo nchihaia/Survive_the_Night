@@ -15,6 +15,7 @@ var AmmoCollectible = Collectible.extend( {
         player.ammoCount += this.amount * player.level;
         me.game.HUD.updateItemValue('charItem');
         me.game.remove(this);
+										 me.audio.playTrack("ammoPickup");
       }
     }
   }

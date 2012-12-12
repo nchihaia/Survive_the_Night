@@ -55,6 +55,7 @@ var MainSurvivorEntity = MainPlayerEntity.extend( {
   {
     this.shoot(BulletProjectile);
     this.newActions.shotWeapon = true;
+												 me.audio.playTrack("singleFire");
   },
 
   ability2: function()
@@ -138,6 +139,7 @@ var OtherSurvivorEntity = OtherPlayerEntity.extend( {
           if (typeof enemy !== 'undefined') {
             enemy.performAttack(this, attackByEnemy, attackByEnemy.damage, 
                                 attackByEnemy.crit);
+												   me.audio.playTrack("HeartBeat");
           }
         }
       }

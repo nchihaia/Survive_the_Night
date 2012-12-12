@@ -1,7 +1,9 @@
 LobbyScreen = me.ScreenObject.extend( {
   init: function() {
+									 me.audio.init("mp3,ogg");
     this.parent(true);
     this.name = 'lobby';
+									 me.audio.playTrack("walkingDeadTheme");
   },
 
   onResetEvent: function() {
@@ -62,6 +64,7 @@ LobbyScreen = me.ScreenObject.extend( {
         // whether or not this player is ready
         if (game.currentState === 0) {
           game.currentState = 1;
+									 me.audio.stopTrack();
         }
         // Only switch to play screen if main player is ready
         if (player.isReady) {

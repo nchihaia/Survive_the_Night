@@ -108,10 +108,14 @@ var PlayScreen = me.ScreenObject.extend( {
       // From 6AM to 7AM
       lastHourToTween = 6;
       tweenMul = 4;
+										me.audio.stopTrack();
+										me.audio.playTrack("beginningOfDay");
     } else if (hour >= 7 && hour < 12) {
       // From 7AM to noon
       lastHourToTween = 11;
-      tweenMul = 0; 
+      tweenMul = 0;
+										me.audio.stopTrack();
+										me.audio.playTrack("sunnyDay");
       // Show daytime start message
       game.score.setMessage('daytimeStart');
     } else if (hour >= 12 && hour < 17) {
@@ -121,11 +125,16 @@ var PlayScreen = me.ScreenObject.extend( {
     } else if (hour == 17) {
       // From 5PM to 6PM
       lastHourToTween = 17;
-      tweenMul = 8; 
+      tweenMul = 8;
+										me.audio.stopTrack();
+										me.audio.playTrack("IncomingNightFall");
+
     } else if (hour >= 18 && hour < 24) {
       // From 6PM to midnight 
       lastHourToTween = 24;
-      tweenMul = 12; 
+      tweenMul = 12;
+										me.audio.stopTrack();
+										me.audio.playTrack("nightTime");
       // Show nighttime start message
       game.score.setMessage('nighttimeStart');
       // If main player is the director, refresh ammo
